@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { FirebaseError } from 'firebase/app'
 import { Shareable } from '../../components/Shareable'
 import { OracaoSheet } from '../../components/oracao/OracaoSheet'
+import { MotivosList } from '../../components/oracao/MotivosList'
 import { addEntry, bySlot, entryId, formatRange, minFill, nextLevel, NAME_MAX, slotLabel, SLOTS } from '../../lib/oracao'
 import { firebaseReady } from '../../lib/firebase'
 import { usePeriodData } from './usePeriodData'
@@ -99,6 +100,8 @@ function Signup({ periodId, churchCode }: { periodId: string; churchCode: string
           Inscrição pela <b>{church.name}</b>
         </div>
       </header>
+
+      <MotivosList text={period.motivos} />
 
       <section className="panel">
         <label className="field">

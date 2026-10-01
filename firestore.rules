@@ -16,8 +16,9 @@ service cloud.firestore {
     }
 
     function validPeriod(p) {
-      return p.keys().hasOnly(['motivo', 'start', 'end', 'churches', 'admins', 'createdAt'])
+      return p.keys().hasOnly(['motivo', 'motivos', 'start', 'end', 'churches', 'admins', 'createdAt'])
         && p.motivo is string && p.motivo.size() <= 120
+        && (!('motivos' in p) || (p.motivos is string && p.motivos.size() <= 2000))
         && p.start is string && p.end is string
         && p.churches is map
         && p.admins is list && p.admins.size() > 0 && p.admins.size() <= 20;

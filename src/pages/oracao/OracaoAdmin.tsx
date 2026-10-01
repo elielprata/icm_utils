@@ -61,7 +61,7 @@ function Admin({ periodId, user }: { periodId: string; user: User }) {
       <section className="panel">
         <h2>Período e igrejas</h2>
         <PeriodForm
-          key={JSON.stringify([period.motivo, period.start, period.end, period.churches])}
+          key={JSON.stringify([period.motivo, period.motivos, period.start, period.end, period.churches])}
           initial={period}
           counts={counts}
           submitLabel="Salvar alterações"

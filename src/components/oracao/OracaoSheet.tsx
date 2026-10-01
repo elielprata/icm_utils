@@ -1,4 +1,5 @@
 import { Fragment } from 'react'
+import { MotivosList } from './MotivosList'
 import { bySlot, formatRange, slotLabel, SLOTS, type Entry, type Period } from '../../lib/oracao'
 
 interface Props {
@@ -42,6 +43,7 @@ export function OracaoSheet({ period, entries, exporting }: Props) {
         <h3>Oração Ininterrupta</h3>
         <div className="os-period">{formatRange(period)}</div>
       </div>
+      <MotivosList text={period.motivos} className="os-motivos" />
       <div className="os-legend">
         {churches.map(([code, c]) => (
           <span key={code}>

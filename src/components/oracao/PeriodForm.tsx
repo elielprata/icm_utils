@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { CHURCH_COLORS, randomCode, type Church, type Period } from '../../lib/oracao'
+import { CHURCH_COLORS, MOTIVOS_MAX, randomCode, type Church, type Period } from '../../lib/oracao'
 
-export type PeriodDraft = Pick<Period, 'motivo' | 'start' | 'end' | 'churches'>
+export type PeriodDraft = Pick<Period, 'motivo' | 'motivos' | 'start' | 'end' | 'churches'>
 
 interface Props {
   initial: PeriodDraft
@@ -11,7 +11,7 @@ interface Props {
   onSubmit: (draft: PeriodDraft) => Promise<void>
 }
 
-/** Motivo, datas e igrejas (nome + cor) de um período. */
+/** Título, motivos, datas e igrejas (nome + cor) de um período. */
 export function PeriodForm({ initial, counts = {}, submitLabel, onSubmit }: Props) {
   const [draft, setDraft] = useState(initial)
   const [saving, setSaving] = useState(false)
@@ -46,6 +46,7 @@ export function PeriodForm({ initial, counts = {}, submitLabel, onSubmit }: Prop
       await onSubmit({
         ...draft,
         motivo: draft.motivo.trim(),
+        motivos: (draft.motivos ?? '').trim(),
         churches: Object.fromEntries(churches.map(([code, c]) => [code, { ...c, name: c.name.trim() }])),
       })
     } catch (err) {
@@ -59,7 +60,7 @@ export function PeriodForm({ initial, counts = {}, submitLabel, onSubmit }: Prop
     <div className="period-form">
       <div className="grid-fields">
         <label className="field">
-          <span>Motivo</span>
+          <span>Título</span>
           <input
             id="motivo"
             value={draft.motivo}
@@ -77,6 +78,18 @@ export function PeriodForm({ initial, counts = {}, submitLabel, onSubmit }: Prop
           <input id="end" type="date" value={draft.end} onChange={(e) => setDraft({ ...draft, end: e.target.value })} />
         </label>
       </div>
+
+      <label className="field motivos-field">
+        <span>Motivos de oração (um por linha)</span>
+        <textarea
+          id="motivos"
+          rows={6}
+          maxLength={MOTIVOS_MAX}
+          value={draft.motivos ?? ''}
+          placeholder={'Pela nossa Pátria e pela nossa Nação 🇧🇷\nPelas autoridades constituídas\nPelas eleições que se aproximam'}
+          onChange={(e) => setDraft({ ...draft, motivos: e.target.value })}
+        />
+      </label>
 
       <h3 className="sub">Igrejas</h3>
       <div className="church-edit">

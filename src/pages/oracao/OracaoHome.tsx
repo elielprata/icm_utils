@@ -9,7 +9,7 @@ import { CoordinatorGate } from './CoordinatorGate'
 function emptyDraft(): PeriodDraft {
   const today = new Date()
   const end = new Date(today.getFullYear(), today.getMonth() + 1, 0)
-  return { motivo: '', start: toISO(today), end: toISO(end), churches: {} }
+  return { motivo: '', motivos: '', start: toISO(today), end: toISO(end), churches: {} }
 }
 
 /** Área do coordenador: seus períodos e criação de um novo. */

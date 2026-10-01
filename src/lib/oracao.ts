@@ -25,7 +25,10 @@ export interface Church {
 
 export interface Period {
   id: string
+  /** Título curto do período (ex.: "Ministério Pr. Aginaldo") */
   motivo: string
+  /** Motivos de oração, um por linha */
+  motivos?: string
   /** YYYY-MM-DD */
   start: string
   end: string
@@ -140,6 +143,16 @@ export const removeEntry = (periodId: string, id: string) => deleteDoc(doc(entri
 /** Link de inscrição de uma igreja */
 export const signupLink = (periodId: string, church: string) =>
   `${location.origin}${location.pathname}#/oracao/${periodId}/${church}`
+
+export const MOTIVOS_MAX = 2000
+
+/** Motivos em lista: uma linha cada, sem marcadores ("*", "-", "•") e sem o título "Motivos de oração". */
+export function motivoLines(text = ''): string[] {
+  return text
+    .split('\n')
+    .map((line) => line.replace(/^\s*[*\-•]\s*/, '').trim())
+    .filter((line) => line && !/^motivos de ora[çc][ãa]o:?$/i.test(line))
+}
 
 export function formatRange(p: Pick<Period, 'start' | 'end'>) {
   const f = (iso: string) => iso.split('-').reverse().join('/')

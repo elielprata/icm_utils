@@ -551,3 +551,49 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Motivos de oração */
+.motivos-field {
+  margin-top: 12px;
+}
+
+.motivos-field textarea {
+  padding: 9px 11px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  font: inherit;
+  font-weight: 600;
+  resize: vertical;
+}
+
+.motivos {
+  background: var(--wine-soft, #f8e9ea);
+  border-left: 4px solid #8a1c24;
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin: 0 0 16px;
+}
+
+.motivos-title {
+  font-weight: 900;
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #8a1c24;
+  margin-bottom: 4px;
+}
+
+.motivos ul {
+  margin: 0;
+  padding-left: 20px;
+  display: grid;
+  gap: 2px;
+  font-weight: 700;
+}
+
+.os-motivos {
+  margin: 12px auto 4px;
+  max-width: 640px;
+  font-size: 0.9rem;
+}
