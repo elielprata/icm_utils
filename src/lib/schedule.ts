@@ -54,3 +54,20 @@ export function personFor(group: ClassGroup, date: Date, index: number, override
   if (people.length === 0) return ''
   return people[index % people.length]
 }
+
+/** "Outubro a Dezembro 2026" */
+export function periodLabel(blocks: MonthBlock[]) {
+  const first = blocks[0]
+  const last = blocks[blocks.length - 1]
+  if (first === last) return `${MONTHS[first.month]} ${first.year}`
+  if (first.year === last.year) return `${MONTHS[first.month]} a ${MONTHS[last.month]} ${last.year}`
+  return `${MONTHS[first.month]} ${first.year} a ${MONTHS[last.month]} ${last.year}`
+}
+
+/** "YYYY-MM-DD" → data local */
+export function fromISO(iso: string): Date {
+  const [y, m, d] = iso.split('-').map(Number)
+  return new Date(y, m - 1, d)
+}
+
+export const formatFull = (d: Date) => `${formatDay(d)}/${d.getFullYear()}`

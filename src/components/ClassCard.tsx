@@ -1,6 +1,6 @@
 import { forwardRef, useState, type CSSProperties } from 'react'
 import type { ClassGroup, Overrides } from '../types'
-import { formatDay, MONTHS, overrideKey, personFor, type MonthBlock } from '../lib/schedule'
+import { formatDay, MONTHS, overrideKey, periodLabel, personFor, type MonthBlock } from '../lib/schedule'
 import bannerUrl from '../assets/fundo-area-kids-site.webp'
 import logoUrl from '../assets/logo-cias.webp'
 
@@ -11,14 +11,6 @@ interface Props {
   onOverride?: (key: string, name: string | null) => void
   /** Versão usada para gerar a imagem: largura fixa e sem edição. */
   exporting?: boolean
-}
-
-function periodLabel(blocks: MonthBlock[]) {
-  const first = blocks[0]
-  const last = blocks[blocks.length - 1]
-  if (first === last) return `${MONTHS[first.month]} ${first.year}`
-  if (first.year === last.year) return `${MONTHS[first.month]} a ${MONTHS[last.month]} ${last.year}`
-  return `${MONTHS[first.month]} ${first.year} a ${MONTHS[last.month]} ${last.year}`
 }
 
 export const ClassCard = forwardRef<HTMLDivElement, Props>(function ClassCard(

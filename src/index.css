@@ -495,3 +495,492 @@ h2 {
     font-size: 0.85rem;
   }
 }
+
+/* ---------- Navegação / tela inicial ---------- */
+.back {
+  display: inline-block;
+  margin-bottom: 10px;
+  color: var(--muted);
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.home-header {
+  text-align: center;
+  margin: 12px 0 24px;
+}
+
+.home-header h1 {
+  font-size: 1.9rem;
+}
+
+.home-header .hint {
+  margin: 6px 0 0;
+}
+
+.tools {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 18px;
+}
+
+.tool {
+  display: flex;
+  flex-direction: column;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  overflow: hidden;
+  text-decoration: none;
+  color: var(--text);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.tool:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.1);
+}
+
+.tool-image {
+  position: relative;
+  height: 150px;
+}
+
+.tool-image img:first-child {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 65%;
+  display: block;
+}
+
+.tool-logo {
+  position: absolute;
+  left: 50%;
+  bottom: 10px;
+  transform: translateX(-50%);
+  width: 110px;
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.3));
+}
+
+.tool-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 16px 16px;
+}
+
+.tool-text strong {
+  font-size: 1.1rem;
+}
+
+.tool-text span {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+/* ---------- Trabalho de Senhoras ---------- */
+.note {
+  margin: 12px 0 0;
+}
+
+.senhoras-people {
+  --accent: #b08a3e;
+  max-width: 460px;
+}
+
+.status {
+  font-weight: 700;
+  font-size: 0.9rem;
+  border-radius: 10px;
+  padding: 8px 12px;
+  margin: 12px 0 0;
+}
+
+.status.ok {
+  background: #e8f6ec;
+  color: #1e7a3c;
+}
+
+.status.warn {
+  background: #fdf3e1;
+  color: #8a5a00;
+}
+
+.rotation-details {
+  margin-top: 14px;
+}
+
+.rotation-details summary {
+  cursor: pointer;
+  font-weight: 800;
+  color: #8a6a2b;
+}
+
+.rotation-scroll {
+  overflow-x: auto;
+  margin-top: 10px;
+}
+
+.rotation {
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.rotation th,
+.rotation td {
+  border: 1px solid #e3c9c4;
+  padding: 6px 8px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.rotation thead th,
+.rotation tbody th {
+  background: #fbefec;
+}
+
+.rotation .current {
+  background: #f6dcd6;
+}
+
+.rotation .num {
+  display: inline-block;
+  min-width: 18px;
+  margin-right: 4px;
+  font-weight: 900;
+  color: #b08a3e;
+}
+
+.senhoras-sheet {
+  --gold: #a8802f;
+  --rose: #d9a5a0;
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  background: #fbf6ef;
+  border-radius: 22px;
+  overflow: hidden;
+  padding-bottom: 24px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
+  container: sheet / inline-size;
+}
+
+.senhoras-sheet.export {
+  width: 720px;
+  max-width: none;
+  margin: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.ss-banner {
+  display: block;
+  width: 100%;
+  -webkit-mask-image: linear-gradient(to bottom, #000 75%, transparent);
+  mask-image: linear-gradient(to bottom, #000 75%, transparent);
+}
+
+.ss-period {
+  width: fit-content;
+  margin: -6px auto 18px;
+  padding: 6px 22px;
+  border: 2px solid #8d8a86;
+  border-radius: 999px;
+  color: #6f6c68;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 0.95rem;
+}
+
+.ss-month {
+  margin: 0 20px 18px;
+  background: #fff;
+  border-radius: 16px;
+  padding: 10px 12px 12px;
+  border: 1px solid #efdcd3;
+}
+
+.ss-month-name {
+  font-family: 'Great Vibes', cursive;
+  font-size: 2.3rem;
+  line-height: 1.1;
+  color: var(--gold);
+  text-align: center;
+  margin-bottom: 6px;
+}
+
+.ss-table {
+  display: grid;
+  grid-template-columns: var(--role-w, 92px) repeat(var(--dates), 1fr);
+  gap: 5px;
+}
+
+.ss-date {
+  text-align: center;
+  font-weight: 900;
+  color: #fff;
+  background: var(--gold);
+  border-radius: 8px;
+  padding: 5px 2px;
+  font-size: 0.95rem;
+}
+
+.ss-role {
+  display: flex;
+  align-items: center;
+  font-weight: 900;
+  color: #9a5d57;
+  font-size: 0.9rem;
+}
+
+.ss-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background: #fbefec;
+  border-radius: 8px;
+  min-height: 38px;
+  font-weight: 800;
+  font-size: 0.95rem;
+  color: var(--text);
+  padding: 4px;
+  word-break: break-word;
+}
+
+.ss-cell button {
+  position: relative;
+  width: 100%;
+  min-height: 30px;
+  border: none;
+  background: transparent;
+  font-weight: 800;
+  color: inherit;
+  border-radius: 6px;
+}
+
+.ss-cell button:hover {
+  background: #f6dcd6;
+}
+
+.ss-cell select {
+  width: 100%;
+  font-weight: 700;
+}
+
+.ss-cell .manual-dot {
+  background: var(--gold);
+}
+
+@container sheet (max-width: 600px) {
+  .ss-month {
+    margin: 0 8px 12px;
+    padding: 8px 6px 10px;
+  }
+  .ss-table {
+    --role-w: 64px;
+    gap: 3px;
+  }
+  .ss-role {
+    font-size: 0.72rem;
+  }
+  .ss-date,
+  .ss-cell {
+    font-size: 0.72rem;
+  }
+  .ss-month-name {
+    font-size: 1.9rem;
+  }
+}
+
+/* 5ª quarta-feira do mês: aparece na imagem, mas sem escala */
+.ss-date.skipped {
+  background: #c9c2b8;
+}
+
+.ss-skip {
+  grid-row: span 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  text-align: center;
+  border: 2px dashed #d3cbc0;
+  border-radius: 8px;
+  color: #8d8a86;
+  font-weight: 800;
+  font-size: 0.85rem;
+  background: repeating-linear-gradient(-45deg, #faf7f2, #faf7f2 6px, #f3eee6 6px, #f3eee6 12px);
+}
+
+.ss-skip span {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+@container sheet (max-width: 600px) {
+  .ss-skip {
+    font-size: 0.65rem;
+  }
+  .ss-skip span {
+    font-size: 0.6rem;
+  }
+}
+
+/* ---------- Rodízio: data do 1º rodízio, resumo do ciclo, aviso de lista ---------- */
+.calc {
+  margin: 12px 0 0;
+  background: #f4ead6;
+  color: #6e5320;
+  border-radius: 10px;
+  padding: 9px 12px;
+  font-weight: 700;
+}
+
+.calc b {
+  color: var(--text);
+}
+
+.ss-round {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 800;
+  opacity: 0.9;
+}
+
+.ss-date.restart {
+  box-shadow: 0 0 0 3px #f3d5cf;
+}
+
+.cycle {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  background: #f4ead6;
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+}
+
+.cycle-icon {
+  font-size: 1.4rem;
+  line-height: 1.2;
+}
+
+.cycle-body {
+  min-width: 0;
+  flex: 1;
+}
+
+.cycle-body strong {
+  display: block;
+}
+
+.cycle-body > span {
+  color: #6e5320;
+  font-size: 0.92rem;
+}
+
+.timeline {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  margin-top: 10px;
+  padding: 3px 3px 6px;
+  font-variant-numeric: tabular-nums;
+}
+
+.tl {
+  flex: 0 0 56px;
+  border-radius: 8px;
+  padding: 5px 2px;
+  text-align: center;
+  font-size: 0.78rem;
+  font-weight: 800;
+  background: #fbefec;
+}
+
+.tl small {
+  display: block;
+  font-weight: 700;
+  color: var(--muted);
+  font-size: 0.7rem;
+}
+
+.tl.alt {
+  background: #eaf1e4;
+}
+
+.tl.restart {
+  outline: 2px solid #a8802f;
+}
+
+.tl.skip {
+  color: var(--muted);
+  background: repeating-linear-gradient(-45deg, #faf7f2, #faf7f2 5px, #efe9e0 5px, #efe9e0 10px);
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.modal-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(43, 42, 51, 0.35);
+}
+
+.modal {
+  background: #fff;
+  border-radius: 14px;
+  padding: 18px;
+  max-width: 420px;
+  width: 100%;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+}
+
+.modal h3 {
+  margin: 0 0 6px;
+}
+
+.modal p {
+  margin: 0 0 12px;
+  color: var(--muted);
+}
+
+.modal-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.modal .primary {
+  background: #a8802f;
+}
+
+.wed-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.picked {
+  font-weight: 600;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
