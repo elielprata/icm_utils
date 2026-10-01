@@ -33,7 +33,7 @@ describe('ícone do site', () => {
 
 describe('prévia do link', () => {
   it('título e descrição de todas as utilidades', () => {
-    expect(meta('og:title')).toBe('Utilidades da Igreja')
+    expect(meta('og:title')).toBe('Organização e Escalas')
     expect(meta('og:description')).toMatch(/CIAs.*Senhoras.*Oração/)
     expect(meta('description')).toBe(meta('og:description'))
   })

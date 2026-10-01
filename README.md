@@ -1,4 +1,4 @@
-# Utilidades da Igreja
+# Organização e Escalas
 
 Site com ferramentas simples para organizar a igreja, publicado no GitHub Pages:
 

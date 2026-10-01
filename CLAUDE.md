@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Guia para trabalhar neste projeto: "Utilidades da Igreja", um site React + Vite + TypeScript publicado no
+Guia para trabalhar neste projeto: "Organização e Escalas", um site React + Vite + TypeScript publicado no
 GitHub Pages (`https://elielprata.github.io/icm_utils/`). Os textos da interface são em português do Brasil.
 
 ## Forma de trabalhar

@@ -36,7 +36,7 @@ export function Home() {
   return (
     <div className="app">
       <header className="home-header">
-        <h1>Utilidades da Igreja</h1>
+        <h1>Organização e Escalas</h1>
         <p className="hint">Escolha o que você quer organizar.</p>
       </header>
 

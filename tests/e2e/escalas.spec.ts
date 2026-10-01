@@ -3,7 +3,7 @@ import { pngSize } from './helpers'
 
 test('tela inicial mostra as ferramentas', async ({ page }) => {
   await page.goto('./')
-  await expect(page.getByRole('heading', { name: 'Utilidades da Igreja' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Organização e Escalas' })).toBeVisible()
   for (const name of ['Escala das CIAs', 'Evento das CIAs', 'Escala do Trabalho de Senhoras', 'Oração Ininterrupta']) {
     await expect(page.getByRole('link', { name: new RegExp(name) })).toBeVisible()
   }
