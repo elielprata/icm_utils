@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it } from 'vitest'
-import { filledTurmas, isTurmaFilled, loadEvento, saveEvento, turmaWhen } from './ciasEvento'
+import { editTurma, isTurmaFilled, loadEvento, saveEvento, turmaWhen, visibleTurmas } from './ciasEvento'
 
 const classes = [
   { id: 'bercario', name: '0 a 3 anos', emoji: '🍼', color: '#e8457f', people: ['Ana'] },
@@ -29,24 +29,24 @@ describe('loadEvento / saveEvento', () => {
     expect(ev.church).toBe('')
     expect(ev.image).toBeNull()
     expect(Object.keys(ev.turmas)).toEqual(['bercario', 'adolescentes'])
-    expect(ev.turmas.bercario).toEqual({ date: '', time: '', palavra: '', louvor: '' })
+    expect(ev.turmas.bercario).toEqual({ date: '', time: '', palavra: '', louvor: '', show: false })
   })
 
   it('salva e lê de volta, com os nomes formatados', () => {
     const ev = loadEvento(classes)
     ev.church = 'Itupiranga'
-    ev.turmas.adolescentes = { date: '2026-10-17', time: '15:00', palavra: 'MARCOS', louvor: 'letícia' }
+    ev.turmas.adolescentes = { date: '2026-10-17', time: '15:00', palavra: 'MARCOS', louvor: 'letícia', show: true }
     expect(saveEvento(ev)).toBe(true)
     const back = loadEvento(classes)
     expect(back.church).toBe('Itupiranga')
-    expect(back.turmas.adolescentes).toEqual({ date: '2026-10-17', time: '15:00', palavra: 'Marcos', louvor: 'Letícia' })
+    expect(back.turmas.adolescentes).toEqual({ date: '2026-10-17', time: '15:00', palavra: 'Marcos', louvor: 'Letícia', show: true })
   })
 
   it('turma nova na escala ganha a sua linha; dados antigos continuam', () => {
     saveEvento({ ...loadEvento([classes[0]]), church: 'Pioneira' })
     const ev = loadEvento(classes)
     expect(ev.church).toBe('Pioneira')
-    expect(ev.turmas.adolescentes).toEqual({ date: '', time: '', palavra: '', louvor: '' })
+    expect(ev.turmas.adolescentes).toEqual({ date: '', time: '', palavra: '', louvor: '', show: false })
   })
 
   it('sem espaço no aparelho (imagem grande demais), avisa em vez de quebrar', () => {
@@ -62,19 +62,46 @@ describe('loadEvento / saveEvento', () => {
   })
 })
 
-describe('só as turmas preenchidas entram na imagem', () => {
-  const vazia = { date: '', time: '', palavra: '', louvor: '' }
+describe('quais turmas entram na imagem (checkbox "Mostrar na imagem")', () => {
+  const vazia = { date: '', time: '', palavra: '', louvor: '', show: false }
 
-  it('turma com qualquer campo preenchido conta', () => {
+  it('turma com qualquer campo preenchido conta como preenchida', () => {
     expect(isTurmaFilled(vazia)).toBe(false)
     expect(isTurmaFilled({ ...vazia, palavra: 'Ana' })).toBe(true)
     expect(isTurmaFilled({ ...vazia, time: '09:00' })).toBe(true)
     expect(isTurmaFilled({ ...vazia, palavra: '   ' })).toBe(false)
   })
 
-  it('devolve as turmas preenchidas, na ordem da escala', () => {
-    const turmas = { bercario: vazia, adolescentes: { ...vazia, louvor: 'Eva' } }
-    expect(filledTurmas(classes, turmas).map((c) => c.id)).toEqual(['adolescentes'])
-    expect(filledTurmas(classes, { bercario: vazia, adolescentes: vazia })).toEqual([])
+  it('entram só as marcadas, mesmo que outras estejam preenchidas', () => {
+    const turmas = {
+      bercario: { ...vazia, palavra: 'Ana', show: false },
+      adolescentes: { ...vazia, louvor: 'Eva', show: true },
+    }
+    expect(visibleTurmas(classes, turmas).map((c) => c.id)).toEqual(['adolescentes'])
+    expect(visibleTurmas(classes, { bercario: vazia, adolescentes: vazia })).toEqual([])
+  })
+
+  it('começar a preencher uma turma vazia marca o checkbox sozinho', () => {
+    expect(editTurma(vazia, { palavra: 'Ana' }).show).toBe(true)
+  })
+
+  it('se a pessoa desmarcou, continuar editando não marca de novo', () => {
+    const desmarcada = { ...vazia, palavra: 'Ana', show: false }
+    expect(editTurma(desmarcada, { louvor: 'Bia' }).show).toBe(false)
+  })
+
+  it('marcar ou desmarcar pelo checkbox vale', () => {
+    expect(editTurma(vazia, { show: true }).show).toBe(true)
+    expect(editTurma({ ...vazia, palavra: 'Ana', show: true }, { show: false }).show).toBe(false)
+  })
+
+  it('dados salvos antes do checkbox: marcadas as que estavam preenchidas', () => {
+    localStorage.setItem(
+      'cias-evento:v1',
+      JSON.stringify({ name: 'X', turmas: { bercario: { date: '', time: '', palavra: 'Ana', louvor: '' }, adolescentes: { date: '', time: '', palavra: '', louvor: '' } } }),
+    )
+    const ev = loadEvento(classes)
+    expect(ev.turmas.bercario.show).toBe(true)
+    expect(ev.turmas.adolescentes.show).toBe(false)
   })
 })

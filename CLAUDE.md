@@ -87,8 +87,9 @@ pelo coordenador). Nomes de igrejas não são alterados.
   sem arte, usa a das CIAs). Para o próximo evento, troca-se tudo e preenche de novo.
 - **Cada turma tem o seu dia e horário** (ex.: Adolescentes no sábado à tarde) e quem faz **Palavra** e **Louvor**,
   escolhidos à mão (sugestões = professoras da turma na escala dos domingos; aceita outro nome).
-- **Só as turmas preenchidas entram na imagem** (evento só das Crianças → só Crianças). Sem nenhuma turma
-  preenchida, não dá para compartilhar.
+- Cada turma tem o checkbox **"Mostrar na imagem"**: só as marcadas entram (evento só das Crianças → só Crianças),
+  mesmo que outras estejam preenchidas. Começar a preencher uma turma vazia marca sozinho; se a pessoa desmarcou,
+  continuar editando não marca de novo. Sem nenhuma marcada, não dá para compartilhar.
 - Dados em `localStorage` (`cias-evento:v1`), lógica em `src/lib/ciasEvento.ts`.
 
 ## Escala do Trabalho de Senhoras

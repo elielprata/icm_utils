@@ -1,7 +1,15 @@
 import { useEffect, useState, type CSSProperties } from 'react'
 
 import { loadState } from '../lib/storage'
-import { emptyEvento, filledTurmas, loadEvento, saveEvento, type CiasEvento, type TurmaEvento } from '../lib/ciasEvento'
+import {
+  editTurma,
+  emptyEvento,
+  loadEvento,
+  saveEvento,
+  visibleTurmas,
+  type CiasEvento,
+  type TurmaEvento,
+} from '../lib/ciasEvento'
 import { compressImage } from '../lib/imageFile'
 import { formatName } from '../lib/names'
 import { PageHeader } from '../components/PageHeader'
@@ -18,7 +26,7 @@ export function CiasEventoPage() {
   const [evento, setEvento] = useState<CiasEvento>(() => loadEvento(classes))
   const [error, setError] = useState<string | null>(null)
   const [sending, setSending] = useState(false)
-  const nothingFilled = filledTurmas(classes, evento.turmas).length === 0
+  const nothingShown = visibleTurmas(classes, evento.turmas).length === 0
 
   useEffect(() => {
     if (!saveEvento(evento)) setError('Não foi possível salvar no aparelho. Tente uma imagem menor.')
@@ -26,7 +34,7 @@ export function CiasEventoPage() {
 
   const set = (patch: Partial<CiasEvento>) => setEvento((e) => ({ ...e, ...patch }))
   const setTurma = (id: string, patch: Partial<TurmaEvento>) =>
-    setEvento((e) => ({ ...e, turmas: { ...e.turmas, [id]: { ...e.turmas[id], ...patch } } }))
+    setEvento((e) => ({ ...e, turmas: { ...e.turmas, [id]: editTurma(e.turmas[id], patch) } }))
 
   const chooseImage = async (file: File | undefined) => {
     if (!file) return
@@ -105,8 +113,9 @@ export function CiasEventoPage() {
       <section className="panel">
         <h2>Turmas</h2>
         <p className="hint">
-          Preencha só as turmas que participam do evento: as vazias não aparecem na imagem. Cada turma tem o seu dia e
-          horário; em Palavra e Louvor, escolha uma professora ou digite outro nome.
+          Marque <b>Mostrar na imagem</b> nas turmas que participam do evento (ao começar a preencher, ela já é
+          marcada). Cada turma tem o seu dia e horário; em Palavra e Louvor, escolha uma professora ou digite outro
+          nome.
         </p>
         <div className="turmas">
           {classes.map((c) => {
@@ -125,9 +134,19 @@ export function CiasEventoPage() {
             )
             return (
               <div key={c.id} className="turma-row" style={{ '--accent': c.color } as CSSProperties}>
-                <b>
-                  {c.emoji} {c.name}
-                </b>
+                <div className="turma-head">
+                  <b>
+                    {c.emoji} {c.name}
+                  </b>
+                  <label className="show-check">
+                    <input
+                      type="checkbox"
+                      checked={t.show}
+                      onChange={(e) => setTurma(c.id, { show: e.target.checked })}
+                    />
+                    Mostrar na imagem
+                  </label>
+                </div>
                 <div className="turma-fields">
                   <label className="field">
                     <span>Data</span>
@@ -156,8 +175,8 @@ export function CiasEventoPage() {
         <div className="cards">
           <Shareable
             fileName="evento-cias.png"
-            blocked={nothingFilled}
-            warning={nothingFilled ? 'Preencha pelo menos uma turma para compartilhar a imagem do evento.' : undefined}
+            blocked={nothingShown}
+            warning={nothingShown ? 'Marque pelo menos uma turma em "Mostrar na imagem" para compartilhar.' : undefined}
             version={JSON.stringify([evento, classes])}
             render={(exporting) => <EventCard evento={evento} classes={classes} exporting={exporting} />}
           />

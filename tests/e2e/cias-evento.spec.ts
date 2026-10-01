@@ -100,21 +100,38 @@ test('preenche o evento, cada turma com o seu horário, e gera uma imagem com to
   await expect(page.locator('.event-form img.event-art')).toBeVisible()
 })
 
-test('a imagem mostra só as turmas preenchidas; sem nenhuma, não compartilha', async ({ page }) => {
+test('o checkbox "Mostrar na imagem" decide quais turmas aparecem; sem nenhuma, não compartilha', async ({ page }) => {
   await page.goto('./#/cias-evento')
   const card = page.locator('.event-sheet:not(.export)')
   const share = page.locator('.card-wrap .actions').getByRole('button', { name: /Compartilhar/ })
+  const row = (i: number) => page.locator('.turma-row').nth(i)
+  const show = (i: number) => row(i).getByRole('checkbox', { name: 'Mostrar na imagem' })
 
-  // Nada preenchido: nenhuma turma na imagem e compartilhar bloqueado
+  // Nada marcado: nenhuma turma na imagem e compartilhar bloqueado
   await expect(card.locator('.ev-turma')).toHaveCount(0)
   await expect(share).toBeDisabled()
-  await expect(page.locator('.share-blocked')).toContainText('Preencha pelo menos uma turma')
+  await expect(page.locator('.share-blocked')).toContainText('Marque pelo menos uma turma')
 
-  // Evento só das Crianças
-  const criancas = page.locator('.turma-row').nth(1)
-  await criancas.getByLabel('Palavra').fill('Divina')
+  // Começar a preencher as Crianças marca o checkbox sozinho
+  await row(1).getByLabel('Palavra').fill('Divina')
+  await expect(show(1)).toBeChecked()
   await expect(card.locator('.ev-turma')).toHaveCount(1)
   await expect(card.locator('.ev-turma')).toContainText('Crianças')
   await expect(share).toBeEnabled()
-  await expect(page.locator('.share-blocked')).toHaveCount(0)
+
+  // Desmarcar esconde, mesmo preenchida; continuar editando não marca de novo
+  await show(1).uncheck()
+  await row(1).getByLabel('Louvor').fill('Manuelle')
+  await expect(show(1)).not.toBeChecked()
+  await expect(card.locator('.ev-turma')).toHaveCount(0)
+
+  // Marcar uma turma sem nada também mostra (com "—")
+  await show(3).check()
+  await expect(card.locator('.ev-turma')).toHaveCount(1)
+  await expect(card.locator('.ev-turma')).toContainText('Adolescentes')
+
+  // A escolha fica salva
+  await page.reload()
+  await expect(show(1)).not.toBeChecked()
+  await expect(show(3)).toBeChecked()
 })

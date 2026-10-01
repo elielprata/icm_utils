@@ -10,6 +10,8 @@ export interface TurmaEvento {
   time: string
   palavra: string
   louvor: string
+  /** Checkbox "Mostrar na imagem" */
+  show: boolean
 }
 
 /** Evento das CIAs (Evangelização, Seminário…), preenchido pela igreja, com todas as turmas numa imagem. */
@@ -24,7 +26,7 @@ export interface CiasEvento {
 }
 
 const KEY = 'cias-evento:v1'
-const emptyTurma = (): TurmaEvento => ({ date: '', time: '', palavra: '', louvor: '' })
+const emptyTurma = (): TurmaEvento => ({ date: '', time: '', palavra: '', louvor: '', show: false })
 
 /** "Domingo, 18/10 · 09:00" (ou só a parte preenchida) */
 export function turmaWhen({ date, time }: Pick<TurmaEvento, 'date' | 'time'>): string {
@@ -37,12 +39,23 @@ export function turmaWhen({ date, time }: Pick<TurmaEvento, 'date' | 'time'>): s
   return parts.join(' · ')
 }
 
-/** A turma entra na imagem se tiver qualquer campo preenchido. */
-export const isTurmaFilled = (t: TurmaEvento) => [t.date, t.time, t.palavra, t.louvor].some((v) => v.trim())
+/** A turma tem algum campo preenchido. */
+export const isTurmaFilled = (t: Pick<TurmaEvento, 'date' | 'time' | 'palavra' | 'louvor'>) =>
+  [t.date, t.time, t.palavra, t.louvor].some((v) => v.trim())
 
-/** Turmas preenchidas, na ordem da escala (ex.: evento só das Crianças). */
-export const filledTurmas = <C extends Pick<ClassGroup, 'id'>>(classes: C[], turmas: Record<string, TurmaEvento>) =>
-  classes.filter((c) => turmas[c.id] && isTurmaFilled(turmas[c.id]))
+/** Turmas marcadas em "Mostrar na imagem", na ordem da escala (ex.: evento só das Crianças). */
+export const visibleTurmas = <C extends Pick<ClassGroup, 'id'>>(classes: C[], turmas: Record<string, TurmaEvento>) =>
+  classes.filter((c) => turmas[c.id]?.show)
+
+/**
+ * Aplica uma edição na turma. Começar a preencher uma turma vazia marca "Mostrar na imagem" sozinho;
+ * se a pessoa desmarcou, continuar editando não marca de novo.
+ */
+export function editTurma(turma: TurmaEvento, patch: Partial<TurmaEvento>): TurmaEvento {
+  const next = { ...turma, ...patch }
+  if (patch.show === undefined && !isTurmaFilled(turma) && isTurmaFilled(next)) next.show = true
+  return next
+}
 
 /** Evento em branco, com uma linha vazia para cada turma. */
 export function emptyEvento(classes: Pick<ClassGroup, 'id'>[]): CiasEvento {
@@ -65,7 +78,10 @@ export function loadEvento(classes: Pick<ClassGroup, 'id'>[]): CiasEvento {
   }
   const turmas: Record<string, TurmaEvento> = {}
   for (const c of classes) {
-    const t = { ...emptyTurma(), ...saved.turmas?.[c.id] }
+    const savedTurma = saved.turmas?.[c.id]
+    const t = { ...emptyTurma(), ...savedTurma }
+    // Dados de antes do checkbox: aparece quem estava preenchida
+    if (savedTurma && savedTurma.show === undefined) t.show = isTurmaFilled(t)
     turmas[c.id] = { ...t, palavra: formatName(t.palavra), louvor: formatName(t.louvor) }
   }
   const empty = emptyEvento(classes)
