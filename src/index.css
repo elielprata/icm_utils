@@ -234,7 +234,7 @@ h2 {
 
 /* ---------- Buttons ---------- */
 .primary,
-.download {
+.share {
   border: none;
   background: var(--primary);
   color: #fff;
@@ -243,13 +243,38 @@ h2 {
   padding: 10px 16px;
 }
 
-.download {
-  display: block;
-  margin: 10px auto 0;
+.actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 14px;
+  margin-top: 12px;
+}
+
+.share {
+  background: #25d366;
+  font-size: 1.05rem;
+  padding: 12px 26px;
+  border-radius: 999px;
+}
+
+.link {
+  border: none;
+  background: none;
+  color: var(--muted);
+  text-decoration: underline;
+  font-weight: 700;
+}
+
+.share-msg {
+  text-align: center;
+  font-weight: 700;
+  color: var(--text);
+  margin: 8px 0 0;
 }
 
 .primary:disabled,
-.download:disabled {
+.share:disabled {
   opacity: 0.6;
 }
 
@@ -285,9 +310,19 @@ h2 {
   container: sheet / inline-size;
 }
 
-.class-sheet.exporting {
+.class-sheet.export {
   width: 720px;
   max-width: none;
+  margin: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.export-stage {
+  position: fixed;
+  left: -10000px;
+  top: 0;
+  pointer-events: none;
 }
 
 .cs-banner {

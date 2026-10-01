@@ -1,28 +1,59 @@
-import { toPng } from 'html-to-image'
+import { toBlob } from 'html-to-image'
 
-/** Largura fixa da imagem, para sair igual no celular e no computador. */
-const EXPORT_WIDTH = 720
+// O Safari às vezes gera a primeira imagem sem as figuras; renderizar duas vezes resolve.
+const isSafari = /^((?!chrome|android|crios|fxios).)*safari/i.test(navigator.userAgent)
 
-export async function downloadPng(node: HTMLElement, fileName: string) {
-  node.classList.add('exporting')
-  try {
-    await document.fonts.ready
-    const dataUrl = await toPng(node, {
-      width: EXPORT_WIDTH,
-      height: node.offsetHeight,
-      pixelRatio: 2,
-      cacheBust: true,
-      backgroundColor: '#fff8ef',
-      // O cartão é centralizado com margin auto; na imagem a margem empurraria o conteúdo.
-      style: { margin: '0', borderRadius: '0', boxShadow: 'none' },
-      // Não exporta elementos marcados como "só na tela"
-      filter: (el) => !(el instanceof HTMLElement && el.dataset.noExport !== undefined),
-    })
-    const a = document.createElement('a')
-    a.href = dataUrl
-    a.download = fileName
-    a.click()
-  } finally {
-    node.classList.remove('exporting')
+/** Gera o PNG de um cartão de exportação (renderizado fora da tela com largura fixa). */
+export async function renderPng(node: HTMLElement): Promise<Blob> {
+  await document.fonts.ready
+  const options = {
+    width: node.offsetWidth,
+    height: node.offsetHeight,
+    pixelRatio: 2,
+    cacheBust: true,
+    backgroundColor: '#fff8ef',
   }
+  if (isSafari) await toBlob(node, options)
+  const blob = await toBlob(node, options)
+  if (!blob) throw new Error('Falha ao gerar a imagem')
+  return blob
+}
+
+export type ShareResult = 'shared' | 'cancelled' | 'copied' | 'downloaded' | 'retry'
+
+/**
+ * Abre o compartilhamento nativo (celular → WhatsApp etc.).
+ * Sem suporte: copia a imagem para colar no WhatsApp Web; em último caso, baixa o arquivo.
+ */
+export async function shareImage(blob: Blob, fileName: string): Promise<ShareResult> {
+  const file = new File([blob], fileName, { type: 'image/png' })
+
+  if (navigator.canShare?.({ files: [file] })) {
+    try {
+      await navigator.share({ files: [file] })
+      return 'shared'
+    } catch (err) {
+      const name = (err as DOMException).name
+      if (name === 'AbortError') return 'cancelled'
+      // Gesto do usuário expirou enquanto a imagem era gerada: a próxima tentativa já usa a imagem pronta.
+      if (name === 'NotAllowedError') return 'retry'
+    }
+  }
+
+  try {
+    await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
+    return 'copied'
+  } catch {
+    downloadBlob(blob, fileName)
+    return 'downloaded'
+  }
+}
+
+export function downloadBlob(blob: Blob, fileName: string) {
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = fileName
+  a.click()
+  setTimeout(() => URL.revokeObjectURL(url), 1000)
 }

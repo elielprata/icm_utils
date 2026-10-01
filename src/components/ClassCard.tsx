@@ -8,7 +8,9 @@ interface Props {
   group: ClassGroup
   blocks: MonthBlock[]
   overrides: Overrides
-  onOverride: (key: string, name: string | null) => void
+  onOverride?: (key: string, name: string | null) => void
+  /** Versão usada para gerar a imagem: largura fixa e sem edição. */
+  exporting?: boolean
 }
 
 function periodLabel(blocks: MonthBlock[]) {
@@ -20,14 +22,14 @@ function periodLabel(blocks: MonthBlock[]) {
 }
 
 export const ClassCard = forwardRef<HTMLDivElement, Props>(function ClassCard(
-  { group, blocks, overrides, onOverride },
+  { group, blocks, overrides, onOverride, exporting },
   ref,
 ) {
   const [editing, setEditing] = useState<string | null>(null)
   let index = 0
 
   return (
-    <div className="class-sheet" ref={ref} style={{ '--accent': group.color } as CSSProperties}>
+    <div className={`class-sheet${exporting ? ' export' : ''}`} ref={ref} style={{ '--accent': group.color } as CSSProperties}>
       <div className="cs-banner">
         <img className="cs-banner-bg" src={bannerUrl} alt="" />
         <img className="cs-logo" src={logoUrl} alt="CIAS" />
@@ -50,13 +52,15 @@ export const ClassCard = forwardRef<HTMLDivElement, Props>(function ClassCard(
               return (
                 <div key={key} className="cs-row">
                   <span className="cs-date">{formatDay(date)}</span>
-                  {editing === key ? (
+                  {exporting ? (
+                    <span className="cs-name">{name || '—'}</span>
+                  ) : editing === key ? (
                     <select
                       autoFocus
                       value={overrides[key] ?? ''}
                       onBlur={() => setEditing(null)}
                       onChange={(e) => {
-                        onOverride(key, e.target.value || null)
+                        onOverride?.(key, e.target.value || null)
                         setEditing(null)
                       }}
                     >
@@ -75,7 +79,7 @@ export const ClassCard = forwardRef<HTMLDivElement, Props>(function ClassCard(
                       onClick={() => setEditing(key)}
                     >
                       {name || '—'}
-                      {overrides[key] && <span className="manual-dot" data-no-export />}
+                      {overrides[key] && <span className="manual-dot" />}
                     </button>
                   )}
                 </div>
