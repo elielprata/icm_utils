@@ -11,6 +11,14 @@ const TOOLS = [
     logo: ciasLogo,
   },
   {
+    href: '#/cias-evento',
+    title: 'Evento das CIAs',
+    description: 'Evangelização, Seminário…: Palavra e Louvor de todas as turmas numa imagem só.',
+    image: ciasBanner,
+    logo: ciasLogo,
+    badge: '🎉 Evento',
+  },
+  {
     href: '#/senhoras',
     title: 'Escala do Trabalho de Senhoras',
     description: 'Palavra, louvor e preparo às quartas-feiras, pela tabela oficial.',
@@ -38,6 +46,7 @@ export function Home() {
             <div className="tool-image">
               {t.image ? <img src={t.image} alt="" /> : <span className="tool-art">{t.art}</span>}
               {t.logo && <img className="tool-logo" src={t.logo} alt="" />}
+              {t.badge && <span className="tool-badge">{t.badge}</span>}
             </div>
             <div className="tool-text">
               <strong>{t.title}</strong>

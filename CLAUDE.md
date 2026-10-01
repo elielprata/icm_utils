@@ -53,6 +53,13 @@ GitHub Pages (`https://elielprata.github.io/icm_utils/`). Os textos da interface
   (estilo e botão "Voltar" iguais em todas as páginas, no `index.css`).
 - `src/pages/oracao/oracao.css`: estilos só da Oração (carregados com ela).
 
+## Nomes de pessoas
+
+Sempre com a primeira letra de cada palavra maiúscula (`formatName` em `src/lib/names.ts`): "maria EDNA" →
+"Maria Edna", "joão DA silva" → "João da Silva" (de/da/do/das/dos/e minúsculos no meio), "Mª ROSA" → "Mª Rosa".
+Vale ao adicionar (CIAs, Senhoras), ao carregar dados antigos do aparelho e ao gravar na Oração (inscrição e edição
+pelo coordenador). Nomes de igrejas não são alterados.
+
 ## Compartilhar (WhatsApp)
 
 - Imagens: `html-to-image` gera o PNG a partir de uma **cópia fora da tela com largura fixa** (classe `export`),
@@ -71,6 +78,16 @@ GitHub Pages (`https://elielprata.github.io/icm_utils/`). Os textos da interface
   são duas.
 - Rodízio simples pela ordem da lista, continuando de um mês para o outro; dia padrão domingo.
 - Uma imagem por classe com os 3 meses (sem título genérico). Dados no `localStorage` (`escala-professores:v1`).
+
+## Evento das CIAs (`#/cias-evento`)
+
+- Para Evangelização (outubro), Seminário (março) etc.: **uma tela só, sem abas**, preenchida pela igreja, e **uma
+  imagem com todas as turmas**.
+- Evento: nome (padrão "Evangelização CIAs"), igreja, tema e a arte (reduzida e guardada no aparelho, até ~700 KB;
+  sem arte, usa a das CIAs). Para o próximo evento, troca-se tudo e preenche de novo.
+- **Cada turma tem o seu dia e horário** (ex.: Adolescentes no sábado à tarde) e quem faz **Palavra** e **Louvor**,
+  escolhidos à mão (sugestões = professoras da turma na escala dos domingos; aceita outro nome).
+- Dados em `localStorage` (`cias-evento:v1`), lógica em `src/lib/ciasEvento.ts`.
 
 ## Escala do Trabalho de Senhoras
 

@@ -37,6 +37,21 @@ describe('Escala de Senhoras: dados salvos', () => {
   })
 })
 
+describe('nomes salvos ficam com a primeira letra maiúscula', () => {
+  it('servas das Senhoras', () => {
+    localStorage.setItem('escala-senhoras:v1', JSON.stringify({ startMonth: '2026-10', people: ['ANA PAULA', 'mª rosa'] }))
+    expect(loadSenhoras().people).toEqual(['Ana Paula', 'Mª Rosa'])
+  })
+
+  it('professoras das CIAs', () => {
+    localStorage.setItem(
+      'escala-professores:v1',
+      JSON.stringify({ config: {}, classes: [{ id: 'c', name: 'Crianças', emoji: '', color: '', people: ['DIVINA', 'joão DA silva'] }], overrides: {} }),
+    )
+    expect(loadState().classes[0].people).toEqual(['Divina', 'João da Silva'])
+  })
+})
+
 describe('Escala das CIAs: dados salvos', () => {
   it('completa a configuração salva com os valores padrão', () => {
     localStorage.setItem('escala-professores:v1', JSON.stringify({ config: { startMonth: '2026-10' }, classes: [], overrides: {} }))

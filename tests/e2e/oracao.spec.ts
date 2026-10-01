@@ -21,9 +21,12 @@ test.describe('inscrição pelo link da igreja', () => {
     // Agendar 00:15 (o nome começa vazio)
     await cell(page, '00:15').click()
     await expect(page.locator('#nome')).toHaveValue('')
-    await page.locator('#nome').fill('Maria')
+    await page.locator('#nome').fill('maria DE souza')
     await page.getByRole('button', { name: 'Confirmar horário' }).click()
     await expect(page.locator('.my-slot')).toContainText('Seu horário: 00:15 – 00:30')
+    // O nome é guardado com a primeira letra maiúscula
+    await expect(page.locator('.my-slot')).toContainText('Maria de Souza')
+    await expect.poll(async () => (await getDoc(doc(db, 'periods', pid, 'entries', '1_0'))).data()?.name).toBe('Maria de Souza')
 
     // Um novo horário não vem com o nome anterior
     await cell(page, '00:00').click()
@@ -190,7 +193,7 @@ test.describe('coordenador', () => {
 
     await cell(page, '03:00').click()
     await page.getByRole('button', { name: 'Editar' }).click()
-    await page.locator('.sheet-form input').first().fill('Paulo Sérgio')
+    await page.locator('.sheet-form input').first().fill('PAULO SÉRGIO')
     await page.getByRole('button', { name: 'Salvar' }).click()
     await expect.poll(async () => (await getDoc(doc(db, 'periods', pid, 'entries', '12_0'))).data()?.name).toBe('Paulo Sérgio')
 

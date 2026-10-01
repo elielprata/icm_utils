@@ -12,6 +12,7 @@ import {
   type Unsubscribe,
 } from 'firebase/firestore'
 import { db } from './firebase'
+import { formatName } from './names'
 
 /** 24 horas em horários de 15 minutos */
 export const SLOTS = 96
@@ -131,7 +132,11 @@ const entryRef = (periodId: string, id: string) => doc(db, 'periods', periodId, 
 const secretRef = (periodId: string, id: string) => doc(db, 'periods', periodId, 'secrets', id)
 const releaseRef = (periodId: string, id: string) => doc(db, 'periods', periodId, 'releases', id)
 
-export function watchPeriod(id: string, onChange: (p: Period | null) => void, onError: (e: Error) => void): Unsubscribe {
+export function watchPeriod(
+  id: string,
+  onChange: (p: Period | null) => void,
+  onError: (e: Error) => void,
+): Unsubscribe {
   return onSnapshot(
     periodRef(id),
     (snap) => onChange(snap.exists() ? ({ id: snap.id, ...snap.data() } as Period) : null),
@@ -139,7 +144,11 @@ export function watchPeriod(id: string, onChange: (p: Period | null) => void, on
   )
 }
 
-export function watchEntries(periodId: string, onChange: (e: Entry[]) => void, onError: (e: Error) => void): Unsubscribe {
+export function watchEntries(
+  periodId: string,
+  onChange: (e: Entry[]) => void,
+  onError: (e: Error) => void,
+): Unsubscribe {
   return onSnapshot(
     entriesCol(periodId),
     (snap) => onChange(snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Entry)),
@@ -147,7 +156,11 @@ export function watchEntries(periodId: string, onChange: (e: Entry[]) => void, o
   )
 }
 
-export function watchMyPeriods(email: string, onChange: (p: Period[]) => void, onError: (e: Error) => void): Unsubscribe {
+export function watchMyPeriods(
+  email: string,
+  onChange: (p: Period[]) => void,
+  onError: (e: Error) => void,
+): Unsubscribe {
   return onSnapshot(
     query(collection(db, 'periods'), where('admins', 'array-contains', email.toLowerCase())),
     (snap) =>
@@ -169,7 +182,7 @@ export const updatePeriod = (id: string, data: Partial<Omit<Period, 'id'>>) => u
 const entryData = (slot: number, level: number, name: string, church: string) => ({
   slot,
   level,
-  name: name.trim().slice(0, NAME_MAX),
+  name: formatName(name).slice(0, NAME_MAX),
   church,
   createdAt: serverTimestamp(),
 })
@@ -179,7 +192,13 @@ const entryData = (slot: number, level: number, name: string, church: string) =>
  * ao mesmo tempo, o banco aceita só a primeira (a segunda recebe erro de permissão).
  * Junto vai uma chave secreta (ilegível para os outros) que permite trocar ou cancelar depois.
  */
-export async function signUp(periodId: string, slot: number, level: number, name: string, church: string): Promise<MyEntry> {
+export async function signUp(
+  periodId: string,
+  slot: number,
+  level: number,
+  name: string,
+  church: string,
+): Promise<MyEntry> {
   const mine = { id: entryId(slot, level), key: randomCode(32) }
   const batch = writeBatch(db)
   batch.set(entryRef(periodId, mine.id), entryData(slot, level, name, church))
@@ -232,7 +251,10 @@ export async function adminMove(periodId: string, entry: Entry, slot: number, le
 }
 
 export const adminUpdate = (periodId: string, id: string, data: Partial<Pick<Entry, 'name' | 'church'>>) =>
-  updateDoc(entryRef(periodId, id), data)
+  updateDoc(
+    entryRef(periodId, id),
+    data.name === undefined ? data : { ...data, name: formatName(data.name).slice(0, NAME_MAX) },
+  )
 
 export async function adminRemove(periodId: string, id: string) {
   const batch = writeBatch(db)

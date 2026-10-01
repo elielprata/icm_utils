@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useState, type ComponentType } from 'react'
 import { Home } from './pages/Home'
 import { CiasPage } from './pages/CiasPage'
+import { CiasEventoPage } from './pages/CiasEventoPage'
 import { SenhorasPage } from './pages/SenhorasPage'
 
 // Carrega a Oração (e o Firebase) só quando alguém abre essa parte.
@@ -9,6 +10,7 @@ const OracaoRoutes = lazy(() => import('./pages/oracao'))
 // Rotas por hash (#/cias), que funcionam no GitHub Pages sem configuração extra.
 const PAGES: Record<string, ComponentType> = {
   cias: CiasPage,
+  'cias-evento': CiasEventoPage,
   senhoras: SenhorasPage,
 }
 

@@ -1,10 +1,10 @@
 import { expect, test } from '@playwright/test'
 import { pngSize } from './helpers'
 
-test('tela inicial mostra as três ferramentas', async ({ page }) => {
+test('tela inicial mostra as ferramentas', async ({ page }) => {
   await page.goto('./')
   await expect(page.getByRole('heading', { name: 'Utilidades da Igreja' })).toBeVisible()
-  for (const name of ['Escala das CIAs', 'Escala do Trabalho de Senhoras', 'Oração Ininterrupta']) {
+  for (const name of ['Escala das CIAs', 'Evento das CIAs', 'Escala do Trabalho de Senhoras', 'Oração Ininterrupta']) {
     await expect(page.getByRole('link', { name: new RegExp(name) })).toBeVisible()
   }
 })
@@ -109,6 +109,31 @@ test('CIAs: só compartilha com pelo menos uma professora (o ideal são duas)', 
   await tab(/Intermediários/)
   await expect(share()).toBeEnabled()
   await expect(warning()).toHaveCount(0)
+})
+
+test('nomes ficam com a primeira letra maiúscula (ao adicionar e os já salvos)', async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem(
+      'escala-professores:v1',
+      JSON.stringify({
+        config: { startMonth: '2026-10', months: 3, weekday: 0 },
+        classes: [{ id: 'criancas', name: 'Crianças', emoji: '🎨', color: '#f2a20c', people: ['DIVINA', 'mª rosa'] }],
+        overrides: {},
+      }),
+    )
+    localStorage.setItem(
+      'escala-senhoras:v1',
+      JSON.stringify({ startMonth: '2026-10', months: 3, anchor: '2026-10-07', people: ['ANA PAULA', 'bia', 'CIDA'], overrides: {} }),
+    )
+  })
+  await page.goto('./#/cias')
+  await expect(page.locator('.people .pname')).toHaveText(['Divina', 'Mª Rosa'])
+  await page.getByPlaceholder('Nome (ou vários separados por vírgula)').fill('maria EDNA, JOÃO DA SILVA')
+  await page.getByRole('button', { name: 'Adicionar' }).click()
+  await expect(page.locator('.people .pname')).toHaveText(['Divina', 'Mª Rosa', 'Maria Edna', 'João da Silva'])
+
+  await page.goto('./#/senhoras')
+  await expect(page.locator('.people .pname')).toHaveText(['Ana Paula', 'Bia', 'Cida'])
 })
 
 test('botão de voltar tem o mesmo visual em todas as páginas', async ({ page }) => {

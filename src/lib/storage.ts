@@ -1,6 +1,7 @@
 import type { AppState, SenhorasState } from '../types'
 import { currentMonth, toISO } from './schedule'
 import { firstWednesday, wednesdayAt } from './senhoras'
+import { formatNames } from './names'
 
 function load<T extends object>(key: string, defaults: T): T {
   try {
@@ -40,7 +41,12 @@ export function defaultState(): AppState {
 export function loadState(): AppState {
   const base = defaultState()
   const saved = load(CIAS_KEY, base)
-  return { ...saved, config: { ...base.config, ...saved.config } }
+  return {
+    ...saved,
+    config: { ...base.config, ...saved.config },
+    // Nomes salvos antes da padronização também ficam com a primeira letra maiúscula
+    classes: saved.classes.map((c) => ({ ...c, people: formatNames(c.people) })),
+  }
 }
 
 export const saveState = (state: AppState) => save(CIAS_KEY, state)
@@ -68,7 +74,7 @@ export function loadSenhoras(): SenhorasState {
   if (!saved.anchor) {
     state.anchor = toISO(wednesdayAt(firstWednesday(state.startMonth), -((startRound ?? 1) - 1)))
   }
-  return state
+  return { ...state, people: formatNames(state.people) }
 }
 
 export const saveSenhoras = (state: SenhorasState) => save(SENHORAS_KEY, state)

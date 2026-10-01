@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { formatNames } from '../lib/names'
 
 interface Props {
   people: string[]
@@ -11,10 +12,7 @@ export function PeopleEditor({ people, onChange, emptyText = 'Nenhum nome ainda'
   const [draft, setDraft] = useState('')
 
   const add = () => {
-    const names = draft
-      .split(',')
-      .map((n) => n.trim())
-      .filter(Boolean)
+    const names = formatNames(draft.split(','))
     if (names.length) onChange([...people, ...names])
     setDraft('')
   }

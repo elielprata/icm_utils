@@ -27,6 +27,7 @@ import {
   type Period,
 } from '../../lib/oracao'
 import { firebaseReady } from '../../lib/firebase'
+import { formatName } from '../../lib/names'
 import { usePeriodData } from './usePeriodData'
 
 const mineKey = (periodId: string) => `oracao:minhas:${periodId}`
@@ -147,7 +148,7 @@ function Horarios({ period, entries, churchCode }: { period: Period; entries: En
       } else {
         const created = await signUp(period.id, slot, level, trimmed, churchCode)
         saveMine([...mine, created])
-        setMessage({ ok: true, text: `${trimmed}, você ficou com ${slotLabel(slot)}. Deus abençoe!` })
+        setMessage({ ok: true, text: `${formatName(trimmed)}, você ficou com ${slotLabel(slot)}. Deus abençoe!` })
       }
       setName('')
       setSheet(null)
