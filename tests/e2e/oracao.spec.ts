@@ -57,15 +57,21 @@ test.describe('inscrição pelo link da igreja', () => {
     await expect(page.locator('.sheet-note')).toContainText('Abre de novo quando todos os horários tiverem 1 pessoa')
   })
 
-  test('aba de motivos e lista completa em PDF e imagem', async ({ page }) => {
+  test('motivos e lista são compartilhados separados, em PDF e imagem', async ({ page }) => {
     const db = await coordinatorDb()
     const pid = await seedPeriod(db, [0, 1, 2, 50])
     await page.goto(`./#/oracao/${pid}/caj`)
     await page.getByRole('tab', { name: 'Motivos' }).click()
-    await expect(page.locator('.motivos h4')).toHaveText(['MOTIVOS PESSOAIS', 'MOTIVOS GERAIS'])
-    await expect(page.locator('.motivos li')).toHaveCount(3)
+    const motivos = page.locator('.motivos-sheet:not(.export)')
+    await expect(motivos.locator('h4')).toHaveText(['MOTIVOS PESSOAIS', 'MOTIVOS GERAIS'])
+    await expect(motivos.locator('li')).toHaveCount(3)
+    const motivosPdf = page.waitForEvent('download')
+    await page.getByRole('button', { name: 'baixar PDF' }).click()
+    expect((await motivosPdf).suggestedFilename()).toBe('motivos-de-oracao.pdf')
 
+    // A lista não repete os motivos
     await page.getByRole('tab', { name: 'Lista' }).click()
+    await expect(page.locator('.oracao-sheet:not(.export)')).not.toContainText('MOTIVOS GERAIS')
     const pdf = page.waitForEvent('download')
     await page.getByRole('button', { name: 'baixar PDF' }).click()
     const pdfFile = await pdf

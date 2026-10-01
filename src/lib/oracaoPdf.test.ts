@@ -3,13 +3,13 @@ import { jsPDF } from 'jspdf'
 
 vi.mock('./firebase', () => ({ db: {} }))
 
-const { buildOracaoPdf, pdfText } = await import('./oracaoPdf')
+const { buildMotivosPdf, buildOracaoPdf, pdfText } = await import('./oracaoPdf')
 const { entryId } = await import('./oracao')
 
 const period = {
   id: 'p1',
   motivo: 'Ministérios',
-  motivos: '* Pela nossa Pátria 🇧🇷\n* Pelas autoridades',
+  motivos: 'MOTIVOS PESSOAIS\n• Entrega ao Senhor 🇧🇷\nMOTIVOS GERAIS\n• Pelas autoridades',
   start: '2026-09-01',
   end: '2026-09-30',
   churches: {
@@ -31,16 +31,17 @@ describe('pdfText', () => {
   })
 })
 
-describe('buildOracaoPdf', () => {
-  it('gera um PDF de uma página com título, motivos, igrejas e nomes', async () => {
+describe('buildOracaoPdf (lista de horários)', () => {
+  it('uma página com título, igrejas e nomes, sem os motivos', async () => {
     const blob = buildOracaoPdf(jsPDF, period, [entry(0, 0, 'Penha', 'caj'), entry(0, 1, 'Eliel'), entry(95, 0, 'Mateus')])
     expect(blob.type).toBe('application/pdf')
     const src = await pdfSource(blob)
     expect(src.startsWith('%PDF')).toBe(true)
     expect(pageCount(src)).toBe(1)
-    for (const text of ['Penha', 'Eliel', 'Mateus', 'Pioneira', 'Cajazeiras', 'Pelas autoridades', '23:45 - 00:00']) {
+    for (const text of ['Penha', 'Eliel', 'Mateus', 'Pioneira', 'Cajazeiras', '23:45 - 00:00']) {
       expect(src).toContain(text)
     }
+    expect(src).not.toContain('MOTIVOS GERAIS')
   })
 
   it('horário com muita gente cabe na linha (a fonte diminui)', async () => {
@@ -50,9 +51,23 @@ describe('buildOracaoPdf', () => {
     expect(pageCount(src)).toBe(1)
   })
 
-  it('com motivos muito longos, a lista de horários vai inteira para a página seguinte', async () => {
-    const motivos = Array.from({ length: 30 }, (_, i) => `Motivo de oração número ${i + 1} com um texto bem comprido para ocupar espaço`).join('\n')
-    const src = await pdfSource(buildOracaoPdf(jsPDF, { ...period, motivos }, []))
-    expect(pageCount(src)).toBe(2)
+  it('motivos longos não afetam a lista: continua em uma página', async () => {
+    const motivos = Array.from({ length: 40 }, (_, i) => `• Motivo número ${i + 1}`).join('\n')
+    expect(pageCount(await pdfSource(buildOracaoPdf(jsPDF, { ...period, motivos }, [])))).toBe(1)
+  })
+})
+
+describe('buildMotivosPdf (motivos à parte)', () => {
+  it('títulos de seção e itens, sem emojis', async () => {
+    const src = await pdfSource(buildMotivosPdf(jsPDF, period))
+    expect(pageCount(src)).toBe(1)
+    for (const text of ['MOTIVOS PESSOAIS', 'MOTIVOS GERAIS', 'Entrega ao Senhor', 'Pelas autoridades']) {
+      expect(src).toContain(text)
+    }
+  })
+
+  it('continua na página seguinte quando há muitos motivos', async () => {
+    const motivos = Array.from({ length: 80 }, (_, i) => `• Motivo número ${i + 1} com um texto comprido para ocupar a linha inteira`).join('\n')
+    expect(pageCount(await pdfSource(buildMotivosPdf(jsPDF, { ...period, motivos })))).toBeGreaterThan(1)
   })
 })

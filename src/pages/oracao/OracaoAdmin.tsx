@@ -1,9 +1,7 @@
 import { useState } from 'react'
 import type { User } from 'firebase/auth'
 import { PageHeader } from '../../components/PageHeader'
-import { Shareable } from '../../components/Shareable'
-import { PdfActions } from '../../components/oracao/PdfActions'
-import { OracaoSheet } from '../../components/oracao/OracaoSheet'
+import { ShareList, ShareMotivos } from '../../components/oracao/ShareOptions'
 import { PeriodForm } from '../../components/oracao/PeriodForm'
 import { PeopleList } from '../../components/oracao/PeopleList'
 import { PageTabs, Sheet } from '../../components/oracao/Sheet'
@@ -15,6 +13,7 @@ import {
   adminUpdate,
   bySlot,
   formatRange,
+  hasMotivos,
   minFill,
   NAME_MAX,
   nextLevel,
@@ -75,14 +74,16 @@ function Admin({ periodId, user }: { periodId: string; user: User }) {
       {tab === 'horarios' && <Slots period={period} entries={entries} />}
       {tab === 'links' && <ChurchLinks period={period} counts={counts} />}
       {tab === 'imagem' && (
-        <div className="cards">
-          <PdfActions period={period} entries={entries} />
-          <Shareable
-            fileName="oracao-ininterrupta.png"
-            version={JSON.stringify([period, entries])}
-            render={(exporting) => <OracaoSheet period={period} entries={entries} exporting={exporting} />}
-          />
-        </div>
+        <>
+          <h2 className="share-title">Lista de horários</h2>
+          <ShareList period={period} entries={entries} />
+          {hasMotivos(period.motivos) && (
+            <>
+              <h2 className="share-title">Motivos de oração</h2>
+              <ShareMotivos period={period} />
+            </>
+          )}
+        </>
       )}
       {tab === 'configurar' && (
         <>

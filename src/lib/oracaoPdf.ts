@@ -30,20 +30,10 @@ const M = 10
 const ROWS = SLOTS / 2
 const FOOTER = 8
 const COL_TITLE_H = 6
-/** Altura mínima de uma linha de horário para continuar legível */
-const MIN_ROW_H = 3.6
 
-/**
- * Lista completa em PDF (A4 em pé): título, motivos, legenda e os 96 horários em duas colunas,
- * com os nomes na cor de cada igreja. O texto continua texto: fica nítido em qualquer zoom.
- * Se os motivos forem longos, a lista de horários vai inteira para a página seguinte.
- */
-export function buildOracaoPdf(jsPDF: JsPDFConstructor, period: Period, entries: Entry[]): Blob {
-  const pdf = new jsPDF({ unit: 'mm', format: 'a4' })
-  const slots = bySlot(entries)
+/** Cabeçalho comum: título curto do período, nome do documento e datas. */
+function drawHeader(pdf: JsPDF, period: Period, title: string): number {
   let y = M + 4
-
-  // Cabeçalho
   pdf.setFont('helvetica', 'bold')
   if (period.motivo) {
     pdf.setFontSize(8).setTextColor(MUTED)
@@ -51,23 +41,22 @@ export function buildOracaoPdf(jsPDF: JsPDFConstructor, period: Period, entries:
     y += 7
   }
   pdf.setFontSize(20).setTextColor(WINE)
-  pdf.text('Oração Ininterrupta', W / 2, y, { align: 'center' })
+  pdf.text(title, W / 2, y, { align: 'center' })
   y += 6
   pdf.setFontSize(10).setTextColor(TEXT)
   pdf.text(formatRange(period), W / 2, y, { align: 'center' })
-  y += 5
+  return y + 7
+}
 
-  y = drawMotivos(pdf, period.motivos, y)
-
-  // Lista de horários: na mesma página se couber com linhas legíveis; senão, numa página só dela
-  const legendH = 5
-  if ((H - M - FOOTER - y - legendH - COL_TITLE_H) / ROWS < MIN_ROW_H) {
-    pdf.addPage()
-    y = M + 4
-    pdf.setFont('helvetica', 'bold').setFontSize(12).setTextColor(WINE)
-    pdf.text(`Oração Ininterrupta  ·  ${formatRange(period)}`, W / 2, y, { align: 'center' })
-    y += 6
-  }
+/**
+ * Lista de horários em PDF (A4 em pé, uma página): título, legenda e os 96 horários em duas colunas,
+ * com os nomes na cor de cada igreja. O texto continua texto: fica nítido em qualquer zoom.
+ * Os motivos de oração têm um PDF próprio (`buildMotivosPdf`).
+ */
+export function buildOracaoPdf(jsPDF: JsPDFConstructor, period: Period, entries: Entry[]): Blob {
+  const pdf = new jsPDF({ unit: 'mm', format: 'a4' })
+  const slots = bySlot(entries)
+  let y = drawHeader(pdf, period, 'Oração Ininterrupta')
   y = drawLegend(pdf, period, y)
   const rowH = Math.min(5.5, (H - M - FOOTER - y - COL_TITLE_H) / ROWS)
   const colGap = 5
@@ -85,50 +74,50 @@ export function buildOracaoPdf(jsPDF: JsPDFConstructor, period: Period, entries:
   return pdf.output('blob')
 }
 
-/** Quadro dos motivos: títulos de seção em negrito, itens com marcador, espaço entre grupos. */
-function drawMotivos(pdf: JsPDF, text: string | undefined, top: number): number {
-  const sections = parseMotivos(text)
-  if (sections.length === 0) return top
+/**
+ * Motivos de oração em PDF próprio (A4): títulos de seção em negrito e sublinhados, itens com marcador,
+ * espaço entre os grupos. Continua na página seguinte se não couber.
+ */
+export function buildMotivosPdf(jsPDF: JsPDFConstructor, period: Period): Blob {
+  const pdf = new jsPDF({ unit: 'mm', format: 'a4' })
+  let y = drawHeader(pdf, period, 'Motivos de Oração') + 4
+  const left = M + 8
+  const width = W - 2 * left
+  const ITEM = 11
+  const TITLE = 12
+  const LINE = 5.6
+  const bottom = H - M - 6
 
-  const width = W - 2 * M - 12
-  const LINE = 3.8
-  const GAP = 1.8
-  type Line = { text: string; bold: boolean; indent: number }
-  const lines: (Line | 'gap')[] = []
-  sections.forEach((s, i) => {
-    if (i > 0) lines.push('gap')
-    if (s.title) {
-      pdf.setFont('helvetica', 'bold').setFontSize(8.8)
-      for (const t of pdf.splitTextToSize(pdfText(s.title), width) as string[]) lines.push({ text: t, bold: true, indent: 0 })
+  const ensure = (needed: number) => {
+    if (y + needed <= bottom) return
+    pdf.addPage()
+    y = M + 8
+  }
+
+  parseMotivos(period.motivos).forEach((section, i) => {
+    if (i > 0) y += 3
+    if (section.title) {
+      pdf.setFont('helvetica', 'bold').setFontSize(TITLE).setTextColor(TEXT)
+      for (const line of pdf.splitTextToSize(pdfText(section.title), width) as string[]) {
+        ensure(LINE + 1)
+        pdf.text(line, left, y)
+        pdf.setDrawColor('#d9b7b9').setLineWidth(0.3).line(left, y + 1.2, left + pdf.getTextWidth(line), y + 1.2)
+        y += LINE + 1
+      }
     }
-    pdf.setFont('helvetica', 'normal').setFontSize(8.5)
-    for (const item of s.items) {
-      const wrapped = pdf.splitTextToSize(pdfText(item), width - 4) as string[]
-      wrapped.forEach((t, k) => lines.push({ text: k === 0 ? `•  ${t}` : t, bold: false, indent: k === 0 ? 0 : 3.2 }))
+    pdf.setFont('helvetica', 'normal').setFontSize(ITEM).setTextColor(TEXT)
+    for (const item of section.items) {
+      const lines = pdf.splitTextToSize(pdfText(item), width - 6) as string[]
+      ensure(LINE * lines.length)
+      pdf.setFillColor(WINE).circle(left + 1.4, y - 1.4, 0.8, 'F')
+      lines.forEach((line) => {
+        pdf.text(line, left + 5, y)
+        y += LINE
+      })
     }
   })
 
-  const contentH = lines.reduce((h, l) => h + (l === 'gap' ? GAP : LINE), 0)
-  const boxH = 8 + contentH + 2
-  pdf.setFillColor('#f8e9ea').roundedRect(M, top, W - 2 * M, boxH, 2, 2, 'F')
-  pdf.setFillColor(WINE).rect(M, top, 1.2, boxH, 'F')
-  pdf.setFont('helvetica', 'bold').setFontSize(7).setTextColor(WINE)
-  pdf.text('MOTIVOS DE ORAÇÃO', M + 5, top + 5, { charSpace: 0.3 })
-
-  let ly = top + 10
-  for (const l of lines) {
-    if (l === 'gap') {
-      ly += GAP
-      continue
-    }
-    pdf.setFont('helvetica', l.bold ? 'bold' : 'normal').setFontSize(l.bold ? 8.8 : 8.5).setTextColor(TEXT)
-    pdf.text(l.text, M + 5 + l.indent, ly)
-    if (l.bold) {
-      pdf.setDrawColor('#d9b7b9').setLineWidth(0.2).line(M + 5, ly + 0.8, M + 5 + pdf.getTextWidth(l.text), ly + 0.8)
-    }
-    ly += LINE
-  }
-  return top + boxH + 4
+  return pdf.output('blob')
 }
 
 /** Legenda centralizada com a cor de cada igreja. */

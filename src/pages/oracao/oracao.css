@@ -653,13 +653,6 @@
   margin: 0 0 8px;
 }
 
-.motivos-tab {
-  font-size: 1.02rem;
-}
-
-.motivos-tab ul {
-  gap: 6px;
-}
 
 /* ---------- Imagem da lista ---------- */
 .oracao-sheet {
@@ -869,11 +862,6 @@
   margin-bottom: 4px;
 }
 
-.os-motivos {
-  margin: 12px auto 4px;
-  max-width: 640px;
-  font-size: 0.9rem;
-}
 
 /* Voltar para "Meus períodos" bem visível */
 .oracao .back {
@@ -901,4 +889,46 @@
 
 .pdf-actions .hint {
   margin: 0;
+}
+
+/* Compartilhar: lista e motivos separados */
+.share-title {
+  margin: 20px 0 10px;
+  font-size: 1.1rem;
+}
+
+.motivos-sheet {
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  background: #fffdfb;
+  border-radius: 14px;
+  padding: 24px 22px 20px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
+  text-align: center;
+}
+
+.motivos-sheet.export {
+  width: 720px;
+  max-width: none;
+  margin: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.motivos-sheet h3 {
+  margin: 0;
+  font-size: 1.9rem;
+  color: #8a1c24;
+  line-height: 1.15;
+}
+
+.motivos-sheet .motivos {
+  margin: 16px 0 0;
+  text-align: left;
+  font-size: 1.02rem;
+}
+
+.motivos-sheet .motivos-title {
+  display: none;
 }

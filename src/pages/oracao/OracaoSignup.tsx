@@ -1,9 +1,6 @@
 import { useState } from 'react'
 import { FirebaseError } from 'firebase/app'
-import { Shareable } from '../../components/Shareable'
-import { PdfActions } from '../../components/oracao/PdfActions'
-import { OracaoSheet } from '../../components/oracao/OracaoSheet'
-import { MotivosList } from '../../components/oracao/MotivosList'
+import { ShareList, ShareMotivos } from '../../components/oracao/ShareOptions'
 import { PeopleList } from '../../components/oracao/PeopleList'
 import { PageTabs, Sheet } from '../../components/oracao/Sheet'
 import { ChurchLegend, firstShiftWhere, ShiftTabs, SlotGrid } from '../../components/oracao/SlotGrid'
@@ -96,17 +93,8 @@ function Signup({ periodId, churchCode }: { periodId: string; churchCode: string
       <PageTabs tabs={tabs} value={tab} onChange={setTab} />
 
       {tab === 'horarios' && <Horarios period={period} entries={entries} churchCode={churchCode} />}
-      {tab === 'motivos' && <MotivosList text={period.motivos} className="motivos-tab" />}
-      {tab === 'lista' && (
-        <div className="cards">
-          <PdfActions period={period} entries={entries} />
-          <Shareable
-            fileName="oracao-ininterrupta.png"
-            version={JSON.stringify([period, entries])}
-            render={(exporting) => <OracaoSheet period={period} entries={entries} exporting={exporting} />}
-          />
-        </div>
-      )}
+      {tab === 'motivos' && <ShareMotivos period={period} />}
+      {tab === 'lista' && <ShareList period={period} entries={entries} />}
     </Shell>
   )
 }
