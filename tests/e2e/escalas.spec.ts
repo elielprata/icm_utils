@@ -73,6 +73,44 @@ test('CIAs: uma aba por classe, cada uma com só as suas professoras e a sua esc
   await expect(page.locator('.class-sheet:not(.export) .cs-class')).toContainText('Crianças')
 })
 
+test('CIAs: só compartilha com pelo menos uma professora (o ideal são duas)', async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem(
+      'escala-professores:v1',
+      JSON.stringify({
+        config: { startMonth: '2026-10', months: 3, weekday: 0 },
+        classes: [
+          { id: 'bercario', name: '0 a 3 anos', emoji: '🍼', color: '#e8457f', people: [] },
+          { id: 'criancas', name: 'Crianças', emoji: '🎨', color: '#f2a20c', people: ['Divina'] },
+          { id: 'intermediarios', name: 'Intermediários', emoji: '📖', color: '#1f6fd1', people: ['Ana', 'Bia'] },
+        ],
+        overrides: {},
+      }),
+    )
+  })
+  await page.goto('./#/cias')
+  const tab = (name: RegExp) => page.locator('.class-tabs').getByRole('tab', { name }).click()
+  const share = () => page.locator('.card-wrap .actions').getByRole('button', { name: /Compartilhar/ })
+  const download = () => page.locator('.card-wrap .actions').getByRole('button', { name: 'baixar' })
+  const warning = () => page.locator('.share-blocked')
+
+  // Nenhuma professora: não deixa compartilhar nem baixar
+  await expect(share()).toBeDisabled()
+  await expect(download()).toBeDisabled()
+  await expect(warning()).toContainText('Cadastre pelo menos uma professora')
+
+  // Uma: deixa, mas lembra que o ideal são duas
+  await tab(/Crianças/)
+  await expect(share()).toBeEnabled()
+  await expect(download()).toBeEnabled()
+  await expect(warning()).toContainText('O ideal são pelo menos duas professoras')
+
+  // Duas: sem aviso
+  await tab(/Intermediários/)
+  await expect(share()).toBeEnabled()
+  await expect(warning()).toHaveCount(0)
+})
+
 test('botão de voltar tem o mesmo visual em todas as páginas', async ({ page }) => {
   const look = async () =>
     page.locator('a.back').evaluate((el) => {

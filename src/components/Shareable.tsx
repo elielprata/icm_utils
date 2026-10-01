@@ -7,6 +7,10 @@ interface Props {
   version: string
   /** Renderiza o cartão; `exporting` = cópia de largura fixa usada na imagem. */
   render: (exporting: boolean) => ReactNode
+  /** Aviso acima dos botões (ex.: "o ideal são duas professoras") */
+  warning?: string
+  /** Impede compartilhar e baixar (o motivo vai em `warning`) */
+  blocked?: boolean
 }
 
 const MESSAGES: Partial<Record<ShareResult, string>> = {
@@ -16,7 +20,7 @@ const MESSAGES: Partial<Record<ShareResult, string>> = {
 }
 
 /** Cartão + botões de compartilhar/baixar a imagem dele. */
-export function Shareable({ fileName, version, render }: Props) {
+export function Shareable({ fileName, version, render, warning, blocked = false }: Props) {
   const stageRef = useRef<HTMLDivElement>(null)
   const image = useRef<Blob | null>(null)
   const [ready, setReady] = useState(false)
@@ -71,11 +75,12 @@ export function Shareable({ fileName, version, render }: Props) {
   return (
     <div className="card-wrap">
       {render(false)}
+      {warning && <p className={`share-blocked status ${blocked ? 'warn' : 'info'}`}>{warning}</p>}
       <div className="actions">
-        <button className="share" disabled={busy} onClick={() => run('share')}>
+        <button className="share" disabled={busy || blocked} onClick={() => run('share')}>
           {busy ? 'Gerando…' : ready ? '📤 Compartilhar' : '📤 Compartilhar…'}
         </button>
-        <button className="link" disabled={busy} onClick={() => run('download')}>
+        <button className="link" disabled={busy || blocked} onClick={() => run('download')}>
           baixar
         </button>
       </div>

@@ -21,6 +21,7 @@ const slug = (s: string) =>
 /** Escala de uma classe (os meses escolhidos), com os botões de compartilhar a imagem. */
 export function SchedulePreview({ group, config, overrides, onOverride }: Props) {
   const blocks = getMonthBlocks(config.startMonth, config.months, config.weekday)
+  const teachers = group.people.filter((p) => p.trim()).length
 
   return (
     <section>
@@ -31,6 +32,14 @@ export function SchedulePreview({ group, config, overrides, onOverride }: Props)
         <Shareable
           fileName={`escala-${slug(group.name)}.png`}
           version={JSON.stringify([group, config, overrides])}
+          blocked={teachers === 0}
+          warning={
+            teachers === 0
+              ? 'Cadastre pelo menos uma professora para compartilhar a escala.'
+              : teachers === 1
+                ? 'O ideal são pelo menos duas professoras, para revezar.'
+                : undefined
+          }
           render={(exporting) => (
             <ClassCard group={group} blocks={blocks} overrides={overrides} onOverride={onOverride} exporting={exporting} />
           )}

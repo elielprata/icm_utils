@@ -67,6 +67,8 @@ GitHub Pages (`https://elielprata.github.io/icm_utils/`). Os textos da interface
 - 4 classes (0 a 3 anos, Crianças, Intermediários, Adolescentes), cada uma com sua lista de professoras.
 - Uma **aba por classe** (cor da classe na aba): cada aba mostra só as professoras e a escala daquela classe.
   Não existe mais "Ativa/Inativa".
+- Sem professora não dá para compartilhar nem baixar a escala da classe; com uma, aparece o aviso de que o ideal
+  são duas.
 - Rodízio simples pela ordem da lista, continuando de um mês para o outro; dia padrão domingo.
 - Uma imagem por classe com os 3 meses (sem título genérico). Dados no `localStorage` (`escala-professores:v1`).
 
