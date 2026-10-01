@@ -984,3 +984,16 @@ h2 {
   font-size: 0.78rem;
   color: var(--muted);
 }
+
+/* Cartão da tela inicial sem foto (Oração Ininterrupta) */
+.tool-art {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at 30% 20%, #b8343c, #6e141a 70%);
+  color: #fff;
+  font-size: 3.2rem;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+}

@@ -16,6 +16,12 @@ const TOOLS = [
     description: 'Palavra, louvor e preparo às quartas-feiras, pela tabela oficial.',
     image: senhorasBanner,
   },
+  {
+    href: '#/oracao',
+    title: 'Oração Ininterrupta',
+    description: 'Lista de 24 horas com várias igrejas: cada igreja recebe seu link de inscrição.',
+    art: '24h',
+  },
 ]
 
 export function Home() {
@@ -30,7 +36,7 @@ export function Home() {
         {TOOLS.map((t) => (
           <a key={t.href} className="tool" href={t.href}>
             <div className="tool-image">
-              <img src={t.image} alt="" />
+              {t.image ? <img src={t.image} alt="" /> : <span className="tool-art">{t.art}</span>}
               {t.logo && <img className="tool-logo" src={t.logo} alt="" />}
             </div>
             <div className="tool-text">

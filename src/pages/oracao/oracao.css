@@ -1,0 +1,553 @@
+/* ---------- Oração Ininterrupta (carregado só nesta parte do site) ---------- */
+.oracao {
+  --wine: #8a1c24;
+  --wine-soft: #f8e9ea;
+}
+
+.oracao .primary {
+  background: var(--wine);
+}
+
+.oracao code {
+  background: #f1ecea;
+  border-radius: 6px;
+  padding: 1px 6px;
+}
+
+.signed-in {
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin: 8px 0 0;
+}
+
+.login .primary {
+  margin-top: 6px;
+}
+
+.panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.panel-head h2 {
+  margin: 0;
+}
+
+/* Lista de períodos */
+.period-list {
+  display: grid;
+  gap: 8px;
+}
+
+.period-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 14px;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.period-item:hover {
+  border-color: var(--wine);
+}
+
+.period-item span {
+  color: var(--muted);
+}
+
+.dots {
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.dots i,
+.link-row i,
+.church-pill i,
+.os-legend i {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+}
+
+/* Formulário do período */
+.sub {
+  font-size: 1rem;
+  margin: 18px 0 8px;
+}
+
+.church-edit {
+  display: grid;
+  gap: 8px;
+}
+
+.church-edit-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 8px 10px;
+}
+
+.church-edit-row input[type="color"] {
+  width: 36px;
+  height: 32px;
+  padding: 0;
+  border: none;
+  background: none;
+}
+
+.church-name {
+  flex: 1;
+  min-width: 140px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-weight: 700;
+}
+
+.swatches {
+  display: flex;
+  gap: 4px;
+}
+
+.swatches button {
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  border: 2px solid transparent;
+}
+
+.swatches button.on {
+  border-color: #fff;
+  box-shadow: 0 0 0 2px var(--text);
+}
+
+.church-edit-row .remove {
+  border: none;
+  background: #f1eee8;
+  border-radius: 6px;
+  width: 28px;
+  height: 28px;
+  color: #c0392b;
+}
+
+.church-count {
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.add-church {
+  justify-self: start;
+  border: none;
+  background: none;
+  color: var(--wine);
+  font-weight: 800;
+  padding: 4px 0;
+}
+
+.save {
+  margin-top: 14px;
+}
+
+/* Links por igreja */
+.links {
+  display: grid;
+  gap: 8px;
+}
+
+.link-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 8px 12px;
+}
+
+.link-row .church-count {
+  margin-left: auto;
+}
+
+/* Horários (coordenador e inscrição) */
+.progress {
+  margin: 0 0 6px;
+  font-weight: 700;
+}
+
+.admin-slots,
+.signup-slots {
+  display: grid;
+  gap: 4px;
+}
+
+.admin-slot,
+.signup-slot {
+  display: grid;
+  grid-template-columns: 112px 1fr auto;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 6px 10px;
+  font-size: 0.9rem;
+  background: #fff;
+}
+
+.admin-slot.empty,
+.signup-slot.empty {
+  background: #fbf3e4;
+  border-color: #efdcb7;
+}
+
+.time {
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+
+.who {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  min-width: 0;
+  font-weight: 800;
+}
+
+.vago {
+  color: #a0711a;
+  font-weight: 800;
+}
+
+.person {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 1.5px solid;
+  border-radius: 999px;
+  padding: 1px 4px 1px 9px;
+}
+
+.person button {
+  border: none;
+  background: none;
+  color: var(--muted);
+  font-size: 0.75rem;
+  padding: 2px 4px;
+}
+
+.plus {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: #fff;
+  font-weight: 900;
+  color: var(--wine);
+}
+
+.encaixar {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.encaixar input,
+.encaixar select {
+  padding: 7px 9px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-weight: 700;
+}
+
+.encaixar input {
+  flex: 1;
+  min-width: 140px;
+}
+
+.encaixar button {
+  padding: 7px 12px;
+}
+
+.admins {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 10px;
+  display: grid;
+  gap: 6px;
+}
+
+.admins li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+}
+
+/* Inscrição */
+.signup-head {
+  text-align: center;
+  margin: 8px 0 16px;
+}
+
+.signup-head .kicker {
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.signup-head h1 {
+  color: var(--wine);
+  font-size: 1.8rem;
+}
+
+.signup-head .range {
+  font-weight: 800;
+}
+
+.church-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  border: 2px solid;
+  border-radius: 999px;
+  padding: 5px 14px;
+  font-weight: 700;
+  background: #fff;
+}
+
+.rule {
+  margin: 10px 0 0;
+}
+
+.mine {
+  display: grid;
+  gap: 2px;
+  margin-top: 12px;
+  background: #e8f6ec;
+  color: #1e7a3c;
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-weight: 700;
+}
+
+.mine small {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.filters {
+  display: flex;
+  gap: 6px;
+  margin: 0 0 10px;
+}
+
+.filters button {
+  border: none;
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-weight: 800;
+  background: #ebe5e2;
+  color: var(--muted);
+}
+
+.filters button.on {
+  background: var(--wine);
+  color: #fff;
+}
+
+.signup-slot.closed {
+  opacity: 0.75;
+}
+
+.signup-slot .primary {
+  padding: 7px 14px;
+}
+
+.confirm {
+  display: flex;
+  gap: 4px;
+}
+
+.confirm .ghost {
+  padding: 6px 10px;
+}
+
+.shift {
+  margin: 14px 0 2px;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--wine);
+}
+
+.shift:first-child {
+  margin-top: 0;
+}
+
+@media (max-width: 520px) {
+  .admin-slot,
+  .signup-slot {
+    grid-template-columns: 92px 1fr auto;
+    gap: 6px;
+    padding: 6px 8px;
+    font-size: 0.85rem;
+  }
+  .signup-slot .primary {
+    padding: 6px 10px;
+  }
+}
+
+/* ---------- Imagem da lista ---------- */
+.oracao-sheet {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  background: #fffdfb;
+  border-radius: 14px;
+  padding: 24px 20px 18px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
+  container: sheet / inline-size;
+}
+
+.oracao-sheet.export {
+  width: 900px;
+  max-width: none;
+  margin: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.os-head {
+  text-align: center;
+}
+
+.os-kicker {
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.os-head h3 {
+  margin: 0;
+  font-size: 2rem;
+  color: #8a1c24;
+  line-height: 1.15;
+}
+
+.os-period {
+  font-weight: 800;
+  margin-top: 2px;
+}
+
+.os-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px 14px;
+  margin: 10px 0 14px;
+  font-weight: 800;
+  font-size: 0.82rem;
+}
+
+.os-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.os-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.os-col-title {
+  text-align: center;
+  font-weight: 900;
+  color: #fff;
+  background: #8a1c24;
+  border-radius: 8px 8px 0 0;
+  padding: 5px;
+  font-size: 0.82rem;
+  letter-spacing: 0.04em;
+}
+
+.os-rows {
+  border: 1px solid var(--border);
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  overflow: hidden;
+}
+
+.os-row {
+  display: grid;
+  grid-template-columns: 96px 1fr;
+  font-size: 0.74rem;
+  border-top: 1px solid #f0e9e6;
+  min-height: 22px;
+}
+
+.os-row:first-child {
+  border-top: none;
+}
+
+.os-time {
+  font-weight: 900;
+  padding: 3px 6px;
+  background: #faf6f4;
+  border-right: 1px solid #f0e9e6;
+  font-variant-numeric: tabular-nums;
+}
+
+.os-names {
+  padding: 3px 8px;
+  font-weight: 800;
+}
+
+.os-sep {
+  color: var(--muted);
+}
+
+.os-row.empty .os-names {
+  background: repeating-linear-gradient(-45deg, #fffdfb, #fffdfb 5px, #fbf3e4 5px, #fbf3e4 10px);
+}
+
+.os-foot {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  margin-top: 12px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: var(--muted);
+}
+
+.os-foot b {
+  color: var(--text);
+}
+
+@container sheet (max-width: 640px) {
+  .os-cols {
+    grid-template-columns: 1fr;
+  }
+}

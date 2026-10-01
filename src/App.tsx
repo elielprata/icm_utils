@@ -1,12 +1,15 @@
-import { useEffect, useState, type ComponentType } from 'react'
+import { lazy, Suspense, useEffect, useState, type ComponentType } from 'react'
 import { Home } from './pages/Home'
 import { CiasPage } from './pages/CiasPage'
 import { SenhorasPage } from './pages/SenhorasPage'
 
+// Carrega a Oração (e o Firebase) só quando alguém abre essa parte.
+const OracaoRoutes = lazy(() => import('./pages/oracao'))
+
 // Rotas por hash (#/cias), que funcionam no GitHub Pages sem configuração extra.
 const PAGES: Record<string, ComponentType> = {
-  '#/cias': CiasPage,
-  '#/senhoras': SenhorasPage,
+  cias: CiasPage,
+  senhoras: SenhorasPage,
 }
 
 export default function App() {
@@ -21,6 +24,14 @@ export default function App() {
     return () => window.removeEventListener('hashchange', onChange)
   }, [])
 
-  const Page = PAGES[route] ?? Home
+  const [section, ...rest] = route.replace(/^#\/?/, '').split('/').filter(Boolean)
+  if (section === 'oracao') {
+    return (
+      <Suspense fallback={<p className="hint app">Carregando…</p>}>
+        <OracaoRoutes path={rest} />
+      </Suspense>
+    )
+  }
+  const Page = PAGES[section] ?? Home
   return <Page />
 }

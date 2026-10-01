@@ -1,14 +1,17 @@
 {
-  "name": "escala-professores",
+  "name": "icm-utils",
   "private": true,
   "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "dev:emulador": "vite --mode emulador",
+    "emuladores": "npx firebase-tools emulators:start --project demo-icm-utils"
   },
   "dependencies": {
+    "firebase": "^12.19.0",
     "html-to-image": "^1.11.13",
     "react": "^19.3.0",
     "react-dom": "^19.3.0"

@@ -1,13 +1,15 @@
 interface Props {
   title: string
   onReset?: () => void
+  back?: string
+  backLabel?: string
 }
 
-export function PageHeader({ title, onReset }: Props) {
+export function PageHeader({ title, onReset, back = '#/', backLabel = 'Início' }: Props) {
   return (
     <>
-      <a className="back" href="#/">
-        ← Início
+      <a className="back" href={back}>
+        ← {backLabel}
       </a>
       <header className="app-header">
         <h1>{title}</h1>
