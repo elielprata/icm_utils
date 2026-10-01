@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { CHURCH_COLORS, hasMotivos, MOTIVOS_MAX, randomCode, type Church, type Period } from '../../lib/oracao'
-import { MotivosList } from './MotivosList'
+import { Modal } from './Sheet'
+import { MotivosCard } from './ShareOptions'
 
 export type PeriodDraft = Pick<Period, 'motivo' | 'motivos' | 'start' | 'end' | 'churches'>
 
@@ -17,6 +18,7 @@ export function PeriodForm({ initial, counts = {}, submitLabel, onSubmit }: Prop
   const [draft, setDraft] = useState(initial)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [preview, setPreview] = useState(false)
   const churches = Object.entries(draft.churches).sort((a, b) => a[1].order - b[1].order)
 
   const setChurch = (code: string, patch: Partial<Church>) =>
@@ -96,13 +98,18 @@ export function PeriodForm({ initial, counts = {}, submitLabel, onSubmit }: Prop
       </label>
       <p className="hint motivos-help">
         Comece cada motivo com <b>•</b>, <b>*</b> ou <b>-</b>. Uma linha sem marcador vira <b>título em negrito</b>, e
-        uma linha em branco separa os grupos. Pode colar direto do PDF.
+        uma linha em branco separa os grupos. Pode colar direto do PDF. Se os motivos vieram numa <b>imagem</b>, envie
+        em <b>Imagem dos motivos</b>, mais abaixo nesta página: com imagem, ela aparece no lugar do texto.
       </p>
       {hasMotivos(draft.motivos) && (
-        <div className="motivos-preview">
-          <span>Como vai aparecer:</span>
-          <MotivosList text={draft.motivos} />
-        </div>
+        <button type="button" className="ghost preview-button" onClick={() => setPreview(true)}>
+          👁 Ver como vai ficar
+        </button>
+      )}
+      {preview && (
+        <Modal title="Como os motivos vão aparecer" onClose={() => setPreview(false)}>
+          <MotivosCard period={draft} />
+        </Modal>
       )}
 
       <h3 className="sub">Igrejas</h3>

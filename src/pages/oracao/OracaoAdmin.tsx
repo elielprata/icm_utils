@@ -5,7 +5,7 @@ import { ShareList, ShareMotivos } from '../../components/oracao/ShareOptions'
 import { MotivosImageField, useMotivosImage } from '../../components/oracao/MotivosImage'
 import { PeriodForm } from '../../components/oracao/PeriodForm'
 import { PeopleList } from '../../components/oracao/PeopleList'
-import { PageTabs, Sheet } from '../../components/oracao/Sheet'
+import { Modal, PageTabs, Sheet } from '../../components/oracao/Sheet'
 import { ChurchLegend, firstShiftWhere, ShiftTabs, SlotGrid } from '../../components/oracao/SlotGrid'
 import {
   adminAdd,
@@ -75,18 +75,7 @@ function Admin({ periodId, user }: { periodId: string; user: User }) {
 
       {tab === 'horarios' && <Slots period={period} entries={entries} />}
       {tab === 'links' && <ChurchLinks period={period} counts={counts} />}
-      {tab === 'imagem' && (
-        <>
-          <h2 className="share-title">Lista de horários</h2>
-          <ShareList period={period} entries={entries} />
-          {(hasMotivos(period.motivos) || image) && (
-            <>
-              <h2 className="share-title">Motivos de oração</h2>
-              <ShareMotivos period={period} image={image} />
-            </>
-          )}
-        </>
-      )}
+      {tab === 'imagem' && <ShareTab period={period} entries={entries} image={image} />}
       {tab === 'configurar' && (
         <>
           <section className="panel">
@@ -102,6 +91,46 @@ function Admin({ periodId, user }: { periodId: string; user: User }) {
           <MotivosImageField periodId={period.id} image={image} />
           <Coordinators period={period} me={user.email!.toLowerCase()} />
         </>
+      )}
+    </>
+  )
+}
+
+/** Compartilhar: duas opções; cada uma abre uma janela com a prévia e os botões. */
+function ShareTab({ period, entries, image }: { period: Period; entries: Entry[]; image?: string | null }) {
+  const [open, setOpen] = useState<'lista' | 'motivos' | null>(null)
+  const hasAnyMotivos = hasMotivos(period.motivos) || Boolean(image)
+
+  return (
+    <>
+      <div className="share-options">
+        <button type="button" className="share-option" onClick={() => setOpen('lista')}>
+          <span className="icon">📋</span>
+          <strong>Lista de horários</strong>
+          <span>Os 96 horários com os nomes, em PDF ou imagem.</span>
+        </button>
+        <button type="button" className="share-option" disabled={!hasAnyMotivos} onClick={() => setOpen('motivos')}>
+          <span className="icon">🙏</span>
+          <strong>Motivos de oração</strong>
+          <span>
+            {image
+              ? 'A imagem enviada, como imagem.'
+              : hasAnyMotivos
+                ? 'Os motivos em texto, como imagem.'
+                : 'Cadastre os motivos ou envie uma imagem em Configurar.'}
+          </span>
+        </button>
+      </div>
+
+      {open === 'lista' && (
+        <Modal title="Lista de horários" onClose={() => setOpen(null)}>
+          <ShareList period={period} entries={entries} />
+        </Modal>
+      )}
+      {open === 'motivos' && (
+        <Modal title="Motivos de oração" onClose={() => setOpen(null)}>
+          <ShareMotivos period={period} image={image} />
+        </Modal>
       )}
     </>
   )

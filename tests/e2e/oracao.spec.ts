@@ -57,7 +57,7 @@ test.describe('inscrição pelo link da igreja', () => {
     await expect(page.locator('.sheet-note')).toContainText('Abre de novo quando todos os horários tiverem 1 pessoa')
   })
 
-  test('motivos e lista são compartilhados separados, em PDF e imagem', async ({ page }) => {
+  test('motivos (só imagem) e lista (PDF e imagem) são compartilhados separados', async ({ page }) => {
     const db = await coordinatorDb()
     const pid = await seedPeriod(db, [0, 1, 2, 50])
     await page.goto(`./#/oracao/${pid}/caj`)
@@ -65,9 +65,10 @@ test.describe('inscrição pelo link da igreja', () => {
     const motivos = page.locator('.motivos-sheet:not(.export)')
     await expect(motivos.locator('h4')).toHaveText(['MOTIVOS PESSOAIS', 'MOTIVOS GERAIS'])
     await expect(motivos.locator('li')).toHaveCount(3)
-    const motivosPdf = page.waitForEvent('download')
-    await page.getByRole('button', { name: 'baixar PDF' }).click()
-    expect((await motivosPdf).suggestedFilename()).toBe('motivos-de-oracao.pdf')
+    await expect(page.getByRole('button', { name: /PDF/ })).toHaveCount(0)
+    const motivosImage = page.waitForEvent('download')
+    await page.getByRole('button', { name: 'baixar', exact: true }).click()
+    expect((await motivosImage).suggestedFilename()).toBe('motivos-de-oracao.png')
 
     // A lista não repete os motivos
     await page.getByRole('tab', { name: 'Lista' }).click()
@@ -120,6 +121,12 @@ test.describe('coordenador', () => {
     await page.getByRole('tab', { name: 'Configurar' }).click()
     await page.locator('#motivo').fill('Campanha de oração')
     await page.locator('#motivos').fill('Pelas famílias')
+    // A prévia abre numa janela (não ocupa a página)
+    await page.getByRole('button', { name: '👁 Ver como vai ficar' }).click()
+    const preview = page.getByRole('dialog', { name: 'Como os motivos vão aparecer' })
+    await expect(preview).toContainText('Pelas famílias')
+    await preview.getByRole('button', { name: '✕ Fechar' }).click()
+    await expect(preview).toHaveCount(0)
     await page.getByRole('button', { name: 'Salvar alterações' }).click()
     await expect.poll(async () => (await getDoc(doc(db, 'periods', pid))).data()?.motivo).toBe('Campanha de oração')
     expect((await getDoc(doc(db, 'periods', pid))).data()?.motivos).toBe('Pelas famílias')
@@ -186,6 +193,8 @@ test.describe('coordenador', () => {
     await page.goto(`./#/oracao/${pid}/pio`)
     await page.getByRole('tab', { name: 'Motivos' }).click()
     await expect(page.locator('.card-wrap img.motivos-image')).toBeVisible()
+    // Com imagem, o texto dos motivos não aparece (é uma coisa ou outra)
+    await expect(page.locator('.motivos-sheet')).toHaveCount(0)
     await page.getByRole('button', { name: 'Ampliar a imagem' }).click()
     await expect(page.locator('.zoom-view img')).toBeVisible()
     await page.getByRole('button', { name: '✕ Fechar' }).click()
@@ -193,6 +202,28 @@ test.describe('coordenador', () => {
     const download = page.waitForEvent('download')
     await page.locator('.card-wrap', { has: page.locator('img.motivos-image') }).getByRole('button', { name: 'baixar' }).click()
     expect((await download).suggestedFilename()).toBe('motivos-de-oracao.webp')
+  })
+
+  test('Compartilhar tem duas opções, cada uma abre sua janela', async ({ page }) => {
+    const db = await coordinatorDb()
+    const pid = await seedPeriod(db, [0, 1])
+    await page.goto(`./#/oracao/admin/${pid}`)
+    await page.getByRole('tab', { name: 'Compartilhar' }).click()
+
+    // Só as duas opções; nada de prévia enorme na página
+    await expect(page.locator('.share-option')).toHaveCount(2)
+    await expect(page.locator('.oracao-sheet, .motivos-sheet')).toHaveCount(0)
+
+    await page.getByRole('button', { name: /Lista de horários/ }).click()
+    const lista = page.getByRole('dialog', { name: 'Lista de horários' })
+    await expect(lista.locator('.oracao-sheet:not(.export)')).toBeVisible()
+    await expect(lista.getByRole('button', { name: /PDF da lista/ })).toBeVisible()
+    await lista.getByRole('button', { name: '✕ Fechar' }).click()
+
+    await page.getByRole('button', { name: /Motivos de oração/ }).click()
+    const motivos = page.getByRole('dialog', { name: 'Motivos de oração' })
+    await expect(motivos.locator('.motivos-sheet:not(.export)')).toContainText('MOTIVOS GERAIS')
+    await expect(motivos.getByRole('button', { name: /PDF/ })).toHaveCount(0)
   })
 
   test('volta para a lista de períodos', async ({ page }) => {

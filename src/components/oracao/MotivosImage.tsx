@@ -38,8 +38,8 @@ export function MotivosImageField({ periodId, image }: { periodId: string; image
     <section className="panel">
       <h2>Imagem dos motivos (opcional)</h2>
       <p className="hint">
-        Se a igreja mandou os motivos numa arte, envie aqui. Ela aparece na aba Motivos de quem se inscreve e pode ser
-        compartilhada. A imagem é reduzida no seu aparelho antes de enviar.
+        Se a igreja mandou os motivos numa arte, envie aqui. Com imagem, ela aparece <b>no lugar do texto</b> na aba
+        Motivos de quem se inscreve e é o que se compartilha. A imagem é reduzida no seu aparelho antes de enviar.
       </p>
       {image && <ZoomableImage src={image} alt="Imagem dos motivos de oração" />}
       <div className="image-buttons">

@@ -1,5 +1,5 @@
 import type { jsPDF as JsPDF } from 'jspdf'
-import { bySlot, formatRange, parseMotivos, slotLabel, SLOTS, type Entry, type Period } from './oracao'
+import { bySlot, formatRange, slotLabel, SLOTS, type Entry, type Period } from './oracao'
 
 type JsPDFConstructor = typeof JsPDF
 
@@ -51,7 +51,7 @@ function drawHeader(pdf: JsPDF, period: Period, title: string): number {
 /**
  * Lista de horários em PDF (A4 em pé, uma página): título, legenda e os 96 horários em duas colunas,
  * com os nomes na cor de cada igreja. O texto continua texto: fica nítido em qualquer zoom.
- * Os motivos de oração têm um PDF próprio (`buildMotivosPdf`).
+ * Os motivos de oração são compartilhados à parte, como imagem.
  */
 export function buildOracaoPdf(jsPDF: JsPDFConstructor, period: Period, entries: Entry[]): Blob {
   const pdf = new jsPDF({ unit: 'mm', format: 'a4' })
@@ -69,52 +69,6 @@ export function buildOracaoPdf(jsPDF: JsPDFConstructor, period: Period, entries:
   pdf.setFont('helvetica', 'bold').setFontSize(8).setTextColor(MUTED)
   pdf.text(`${filled} de ${SLOTS} horários preenchidos  ·  ${SLOTS - filled} vagos  ·  ${entries.length} pessoas`, W / 2, H - M + 2, {
     align: 'center',
-  })
-
-  return pdf.output('blob')
-}
-
-/**
- * Motivos de oração em PDF próprio (A4): títulos de seção em negrito e sublinhados, itens com marcador,
- * espaço entre os grupos. Continua na página seguinte se não couber.
- */
-export function buildMotivosPdf(jsPDF: JsPDFConstructor, period: Period): Blob {
-  const pdf = new jsPDF({ unit: 'mm', format: 'a4' })
-  let y = drawHeader(pdf, period, 'Motivos de Oração') + 4
-  const left = M + 8
-  const width = W - 2 * left
-  const ITEM = 11
-  const TITLE = 12
-  const LINE = 5.6
-  const bottom = H - M - 6
-
-  const ensure = (needed: number) => {
-    if (y + needed <= bottom) return
-    pdf.addPage()
-    y = M + 8
-  }
-
-  parseMotivos(period.motivos).forEach((section, i) => {
-    if (i > 0) y += 3
-    if (section.title) {
-      pdf.setFont('helvetica', 'bold').setFontSize(TITLE).setTextColor(TEXT)
-      for (const line of pdf.splitTextToSize(pdfText(section.title), width) as string[]) {
-        ensure(LINE + 1)
-        pdf.text(line, left, y)
-        pdf.setDrawColor('#d9b7b9').setLineWidth(0.3).line(left, y + 1.2, left + pdf.getTextWidth(line), y + 1.2)
-        y += LINE + 1
-      }
-    }
-    pdf.setFont('helvetica', 'normal').setFontSize(ITEM).setTextColor(TEXT)
-    for (const item of section.items) {
-      const lines = pdf.splitTextToSize(pdfText(item), width - 6) as string[]
-      ensure(LINE * lines.length)
-      pdf.setFillColor(WINE).circle(left + 1.4, y - 1.4, 0.8, 'F')
-      lines.forEach((line) => {
-        pdf.text(line, left + 5, y)
-        y += LINE
-      })
-    }
   })
 
   return pdf.output('blob')

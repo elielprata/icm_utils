@@ -1,5 +1,5 @@
 import { Shareable } from '../Shareable'
-import { buildMotivosPdf, buildOracaoPdf } from '../../lib/oracaoPdf'
+import { buildOracaoPdf } from '../../lib/oracaoPdf'
 import { formatRange, hasMotivos, type Entry, type Period } from '../../lib/oracao'
 import { MotivosImageShare } from './MotivosImage'
 import { MotivosList } from './MotivosList'
@@ -25,35 +25,44 @@ export function ShareList({ period, entries }: { period: Period; entries: Entry[
   )
 }
 
+/** Cartão com os motivos em texto (é o que vira imagem). */
+export function MotivosCard({
+  period,
+  exporting,
+}: {
+  period: Pick<Period, 'motivo' | 'motivos' | 'start' | 'end'>
+  exporting?: boolean
+}) {
+  return (
+    <div className={`motivos-sheet${exporting ? ' export' : ''}`}>
+      {period.motivo && <div className="os-kicker">{period.motivo}</div>}
+      <h3>Motivos de Oração</h3>
+      <div className="os-period">{formatRange(period)}</div>
+      <MotivosList text={period.motivos} />
+    </div>
+  )
+}
+
 /**
- * Motivos de oração, compartilhados à parte da lista: a imagem enviada pelo coordenador (se houver)
- * e os motivos em texto, em PDF ou imagem.
+ * Motivos de oração, compartilhados à parte da lista e só como imagem: a arte enviada pelo coordenador
+ * substitui o texto; sem arte, os motivos em texto viram imagem.
  */
 export function ShareMotivos({ period, image }: { period: Period; image?: string | null }) {
+  if (image) {
+    return (
+      <div className="cards">
+        <MotivosImageShare image={image} />
+      </div>
+    )
+  }
+  if (!hasMotivos(period.motivos)) return null
   return (
     <div className="cards">
-      {image && <MotivosImageShare image={image} />}
-      {hasMotivos(period.motivos) && (
-        <>
-          <PdfActions
-            what="dos motivos"
-            fileName="motivos-de-oracao.pdf"
-            build={(jsPDF) => buildMotivosPdf(jsPDF, period)}
-          />
-          <Shareable
-            fileName="motivos-de-oracao.png"
-            version={JSON.stringify([period.motivo, period.motivos, period.start, period.end])}
-            render={(exporting) => (
-              <div className={`motivos-sheet${exporting ? ' export' : ''}`}>
-                {period.motivo && <div className="os-kicker">{period.motivo}</div>}
-                <h3>Motivos de Oração</h3>
-                <div className="os-period">{formatRange(period)}</div>
-                <MotivosList text={period.motivos} />
-              </div>
-            )}
-          />
-        </>
-      )}
+      <Shareable
+        fileName="motivos-de-oracao.png"
+        version={JSON.stringify([period.motivo, period.motivos, period.start, period.end])}
+        render={(exporting) => <MotivosCard period={period} exporting={exporting} />}
+      />
     </div>
   )
 }

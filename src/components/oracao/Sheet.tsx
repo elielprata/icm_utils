@@ -27,6 +27,29 @@ export function Sheet({ title, subtitle, onClose, children }: Props) {
   )
 }
 
+/** Janela grande para prévias (imagem da lista, motivos), com rolagem própria. */
+export function Modal({ title, onClose, children }: { title: string; onClose: () => void; children: ReactNode }) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [onClose])
+
+  return (
+    <div className="modal-bg" onClick={onClose}>
+      <div className="modal big" role="dialog" aria-modal="true" aria-label={title} onClick={(e) => e.stopPropagation()}>
+        <div className="modal-head">
+          <h3>{title}</h3>
+          <button type="button" className="ghost" onClick={onClose}>
+            ✕ Fechar
+          </button>
+        </div>
+        <div className="modal-body">{children}</div>
+      </div>
+    </div>
+  )
+}
+
 /** Abas de página (ex.: Horários · Motivos · Lista) */
 export function PageTabs<T extends string>({
   tabs,
