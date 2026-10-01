@@ -33,7 +33,10 @@ test('preenche o evento, cada turma com o seu horário, e gera uma imagem com to
   await page.goto('./#/cias-evento')
 
   // Evento: nome, igreja, tema e arte (data e horário são de cada turma)
-  await expect(page.locator('#ev-name')).toHaveValue('Evangelização CIAs')
+  // O nome não vem preenchido: só um exemplo no campo
+  await expect(page.locator('#ev-name')).toHaveValue('')
+  await expect(page.locator('#ev-name')).toHaveAttribute('placeholder', /Evangelização CIAs/)
+  await page.locator('#ev-name').fill('Evangelização CIAs')
   await page.locator('#ev-church').fill('Itupiranga')
   await page.locator('#ev-tema').fill('Você sabe o que é Salvação?')
 
@@ -95,4 +98,23 @@ test('preenche o evento, cada turma com o seu horário, e gera uma imagem com to
   await expect(page.locator('#ev-church')).toHaveValue('Itupiranga')
   await expect(turmas.nth(3).getByLabel('Horário')).toHaveValue('15:00')
   await expect(page.locator('.event-form img.event-art')).toBeVisible()
+})
+
+test('a imagem mostra só as turmas preenchidas; sem nenhuma, não compartilha', async ({ page }) => {
+  await page.goto('./#/cias-evento')
+  const card = page.locator('.event-sheet:not(.export)')
+  const share = page.locator('.card-wrap .actions').getByRole('button', { name: /Compartilhar/ })
+
+  // Nada preenchido: nenhuma turma na imagem e compartilhar bloqueado
+  await expect(card.locator('.ev-turma')).toHaveCount(0)
+  await expect(share).toBeDisabled()
+  await expect(page.locator('.share-blocked')).toContainText('Preencha pelo menos uma turma')
+
+  // Evento só das Crianças
+  const criancas = page.locator('.turma-row').nth(1)
+  await criancas.getByLabel('Palavra').fill('Divina')
+  await expect(card.locator('.ev-turma')).toHaveCount(1)
+  await expect(card.locator('.ev-turma')).toContainText('Crianças')
+  await expect(share).toBeEnabled()
+  await expect(page.locator('.share-blocked')).toHaveCount(0)
 })

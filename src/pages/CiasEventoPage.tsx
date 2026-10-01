@@ -1,7 +1,7 @@
 import { useEffect, useState, type CSSProperties } from 'react'
 
 import { loadState } from '../lib/storage'
-import { emptyEvento, loadEvento, saveEvento, type CiasEvento, type TurmaEvento } from '../lib/ciasEvento'
+import { emptyEvento, filledTurmas, loadEvento, saveEvento, type CiasEvento, type TurmaEvento } from '../lib/ciasEvento'
 import { compressImage } from '../lib/imageFile'
 import { formatName } from '../lib/names'
 import { PageHeader } from '../components/PageHeader'
@@ -18,6 +18,7 @@ export function CiasEventoPage() {
   const [evento, setEvento] = useState<CiasEvento>(() => loadEvento(classes))
   const [error, setError] = useState<string | null>(null)
   const [sending, setSending] = useState(false)
+  const nothingFilled = filledTurmas(classes, evento.turmas).length === 0
 
   useEffect(() => {
     if (!saveEvento(evento)) setError('Não foi possível salvar no aparelho. Tente uma imagem menor.')
@@ -49,11 +50,23 @@ export function CiasEventoPage() {
         <div className="grid-fields">
           <label className="field">
             <span>Nome do evento</span>
-            <input id="ev-name" value={evento.name} maxLength={60} onChange={(e) => set({ name: e.target.value })} />
+            <input
+              id="ev-name"
+              value={evento.name}
+              maxLength={60}
+              placeholder="Ex.: Evangelização CIAs, Seminário CIAs"
+              onChange={(e) => set({ name: e.target.value })}
+            />
           </label>
           <label className="field">
             <span>Igreja</span>
-            <input id="ev-church" value={evento.church} maxLength={60} placeholder="Nome da igreja" onChange={(e) => set({ church: e.target.value })} />
+            <input
+              id="ev-church"
+              value={evento.church}
+              maxLength={60}
+              placeholder="Nome da igreja"
+              onChange={(e) => set({ church: e.target.value })}
+            />
           </label>
           <label className="field">
             <span>Tema (opcional)</span>
@@ -90,8 +103,11 @@ export function CiasEventoPage() {
       </section>
 
       <section className="panel">
-        <h2>Todas as turmas</h2>
-        <p className="hint">Cada turma tem o seu dia e horário. Palavra e Louvor: escolha uma professora ou digite outro nome.</p>
+        <h2>Turmas</h2>
+        <p className="hint">
+          Preencha só as turmas que participam do evento: as vazias não aparecem na imagem. Cada turma tem o seu dia e
+          horário; em Palavra e Louvor, escolha uma professora ou digite outro nome.
+        </p>
         <div className="turmas">
           {classes.map((c) => {
             const t = evento.turmas[c.id]
@@ -140,6 +156,8 @@ export function CiasEventoPage() {
         <div className="cards">
           <Shareable
             fileName="evento-cias.png"
+            blocked={nothingFilled}
+            warning={nothingFilled ? 'Preencha pelo menos uma turma para compartilhar a imagem do evento.' : undefined}
             version={JSON.stringify([evento, classes])}
             render={(exporting) => <EventCard evento={evento} classes={classes} exporting={exporting} />}
           />

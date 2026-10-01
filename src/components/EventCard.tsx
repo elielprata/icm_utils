@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'react'
 import type { ClassGroup } from '../types'
-import { turmaWhen, type CiasEvento } from '../lib/ciasEvento'
+import { filledTurmas, turmaWhen, type CiasEvento } from '../lib/ciasEvento'
 import ciasBanner from '../assets/fundo-area-kids-site.webp'
 import ciasLogo from '../assets/logo-cias.webp'
 
@@ -11,7 +11,7 @@ interface Props {
   exporting?: boolean
 }
 
-/** Imagem do evento: a arte, o nome, a igreja, o tema e todas as turmas (dia, horário, Palavra e Louvor). */
+/** Imagem do evento: a arte, o nome, a igreja, o tema e as turmas preenchidas (dia, horário, Palavra e Louvor). */
 export function EventCard({ evento, classes, exporting }: Props) {
   return (
     <div className={`event-sheet${exporting ? ' export' : ''}`}>
@@ -20,14 +20,13 @@ export function EventCard({ evento, classes, exporting }: Props) {
         {!evento.image && <img className="ev-logo" src={ciasLogo} alt="CIAS" />}
       </div>
       <div className="ev-head">
-        <div className="ev-name">{evento.name || 'Evento das CIAs'}</div>
+        {evento.name && <div className="ev-name">{evento.name}</div>}
         {evento.church && <div className="ev-church">{evento.church}</div>}
         {evento.tema && <div className="ev-tema">“{evento.tema}”</div>}
       </div>
       <div className="ev-turmas">
-        {classes.map((c) => {
+        {filledTurmas(classes, evento.turmas).map((c) => {
           const t = evento.turmas[c.id]
-          if (!t) return null
           return (
             <div key={c.id} className="ev-turma" style={{ '--accent': c.color } as CSSProperties}>
               <div className="ev-turma-head">

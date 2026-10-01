@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it } from 'vitest'
-import { loadEvento, saveEvento, turmaWhen } from './ciasEvento'
+import { filledTurmas, isTurmaFilled, loadEvento, saveEvento, turmaWhen } from './ciasEvento'
 
 const classes = [
   { id: 'bercario', name: '0 a 3 anos', emoji: '🍼', color: '#e8457f', people: ['Ana'] },
@@ -23,9 +23,9 @@ describe('turmaWhen: dia e horário de cada turma', () => {
 })
 
 describe('loadEvento / saveEvento', () => {
-  it('sem nada salvo: "Evangelização CIAs" e uma linha vazia para cada turma', () => {
+  it('sem nada salvo: nome vazio e uma linha vazia para cada turma', () => {
     const ev = loadEvento(classes)
-    expect(ev.name).toBe('Evangelização CIAs')
+    expect(ev.name).toBe('')
     expect(ev.church).toBe('')
     expect(ev.image).toBeNull()
     expect(Object.keys(ev.turmas)).toEqual(['bercario', 'adolescentes'])
@@ -59,5 +59,22 @@ describe('loadEvento / saveEvento', () => {
     } finally {
       Storage.prototype.setItem = original
     }
+  })
+})
+
+describe('só as turmas preenchidas entram na imagem', () => {
+  const vazia = { date: '', time: '', palavra: '', louvor: '' }
+
+  it('turma com qualquer campo preenchido conta', () => {
+    expect(isTurmaFilled(vazia)).toBe(false)
+    expect(isTurmaFilled({ ...vazia, palavra: 'Ana' })).toBe(true)
+    expect(isTurmaFilled({ ...vazia, time: '09:00' })).toBe(true)
+    expect(isTurmaFilled({ ...vazia, palavra: '   ' })).toBe(false)
+  })
+
+  it('devolve as turmas preenchidas, na ordem da escala', () => {
+    const turmas = { bercario: vazia, adolescentes: { ...vazia, louvor: 'Eva' } }
+    expect(filledTurmas(classes, turmas).map((c) => c.id)).toEqual(['adolescentes'])
+    expect(filledTurmas(classes, { bercario: vazia, adolescentes: vazia })).toEqual([])
   })
 })

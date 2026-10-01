@@ -35,8 +35,8 @@ GitHub Pages (`https://elielprata.github.io/icm_utils/`). Os textos da interface
 
 - Emuladores: `firebase-tools` **13** (devDependency) porque funciona com o Java 17 do PATH. Versões novas pedem
   Java 21 (há um Java 25 em `C:\Program Files\Android\Android Studio1\jbr`).
-- Não rode `test:rules` logo depois de `test:e2e` no mesmo instante: o emulador anterior ainda pode estar
-  liberando a porta 8080 (dá "fetch failed").
+- `test:rules` às vezes falha com "fetch failed" (o emulador ainda subindo ou o anterior liberando a porta 8080):
+  rode de novo antes de investigar.
 - No modo emulador existe `window.emulatorSignIn(email)` para entrar como coordenador nos testes.
 - O deploy (`.github/workflows/deploy.yml`) roda `npm test` e `npm run test:rules` antes de publicar; se falharem,
   o site não é atualizado. O GitHub Pages guarda a página por 10 min (`max-age=600`): depois de publicar,
@@ -83,10 +83,12 @@ pelo coordenador). Nomes de igrejas não são alterados.
 
 - Para Evangelização (outubro), Seminário (março) etc.: **uma tela só, sem abas**, preenchida pela igreja, e **uma
   imagem com todas as turmas**.
-- Evento: nome (padrão "Evangelização CIAs"), igreja, tema e a arte (reduzida e guardada no aparelho, até ~700 KB;
+- Evento: nome (começa **vazio**, só com exemplo no campo), igreja, tema e a arte (reduzida e guardada no aparelho, até ~700 KB;
   sem arte, usa a das CIAs). Para o próximo evento, troca-se tudo e preenche de novo.
 - **Cada turma tem o seu dia e horário** (ex.: Adolescentes no sábado à tarde) e quem faz **Palavra** e **Louvor**,
   escolhidos à mão (sugestões = professoras da turma na escala dos domingos; aceita outro nome).
+- **Só as turmas preenchidas entram na imagem** (evento só das Crianças → só Crianças). Sem nenhuma turma
+  preenchida, não dá para compartilhar.
 - Dados em `localStorage` (`cias-evento:v1`), lógica em `src/lib/ciasEvento.ts`.
 
 ## Escala do Trabalho de Senhoras

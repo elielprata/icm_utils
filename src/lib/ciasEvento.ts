@@ -37,10 +37,17 @@ export function turmaWhen({ date, time }: Pick<TurmaEvento, 'date' | 'time'>): s
   return parts.join(' · ')
 }
 
+/** A turma entra na imagem se tiver qualquer campo preenchido. */
+export const isTurmaFilled = (t: TurmaEvento) => [t.date, t.time, t.palavra, t.louvor].some((v) => v.trim())
+
+/** Turmas preenchidas, na ordem da escala (ex.: evento só das Crianças). */
+export const filledTurmas = <C extends Pick<ClassGroup, 'id'>>(classes: C[], turmas: Record<string, TurmaEvento>) =>
+  classes.filter((c) => turmas[c.id] && isTurmaFilled(turmas[c.id]))
+
 /** Evento em branco, com uma linha vazia para cada turma. */
 export function emptyEvento(classes: Pick<ClassGroup, 'id'>[]): CiasEvento {
   return {
-    name: 'Evangelização CIAs',
+    name: '',
     church: '',
     tema: '',
     image: null,

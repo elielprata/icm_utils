@@ -1215,6 +1215,11 @@ h2 {
   padding: 16px 18px 0;
 }
 
+/* Número ímpar de turmas: a última ocupa a linha inteira */
+.ev-turma:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+}
+
 .ev-turma {
   background: #fff;
   border-radius: 14px;
