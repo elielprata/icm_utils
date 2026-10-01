@@ -3,7 +3,8 @@ import { FirebaseError } from 'firebase/app'
 import { ShareList, ShareMotivos } from '../../components/oracao/ShareOptions'
 import { useMotivosImage } from '../../components/oracao/MotivosImage'
 import { PeopleList } from '../../components/oracao/PeopleList'
-import { PageTabs, Sheet } from '../../components/oracao/Sheet'
+import { Sheet } from '../../components/oracao/Sheet'
+import { PageTabs } from '../../components/PageTabs'
 import { ChurchLegend, firstShiftWhere, ShiftTabs, SlotGrid } from '../../components/oracao/SlotGrid'
 import {
   bySlot,

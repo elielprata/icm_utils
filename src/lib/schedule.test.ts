@@ -27,7 +27,7 @@ describe('getMonthBlocks', () => {
 })
 
 describe('personFor', () => {
-  const group: ClassGroup = { id: 'criancas', name: 'Crianças', emoji: '', color: '', enabled: true, people: ['Divina', 'Manuelle', 'Vanessa'] }
+  const group: ClassGroup = { id: 'criancas', name: 'Crianças', emoji: '', color: '', people: ['Divina', 'Manuelle', 'Vanessa'] }
   const date = new Date(2026, 9, 4)
 
   it('segue o rodízio pelo índice global (continua entre os meses)', () => {

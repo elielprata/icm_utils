@@ -37,6 +37,57 @@ test('CIAs: rodízio continua entre os meses e a imagem sai com 1440 px', async 
   expect((await pngSize(file)).width).toBe(1440)
 })
 
+test('CIAs: uma aba por classe, cada uma com só as suas professoras e a sua escala', async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem(
+      'escala-professores:v1',
+      JSON.stringify({
+        config: { startMonth: '2026-10', months: 3, weekday: 0 },
+        classes: [
+          { id: 'bercario', name: '0 a 3 anos', emoji: '🍼', color: '#e8457f', enabled: true, people: ['Ana', 'Bia'] },
+          { id: 'criancas', name: 'Crianças', emoji: '🎨', color: '#f2a20c', enabled: false, people: ['Divina', 'Manuelle'] },
+          { id: 'intermediarios', name: 'Intermediários', emoji: '📖', color: '#1f6fd1', enabled: true, people: [] },
+          { id: 'adolescentes', name: 'Adolescentes', emoji: '🎧', color: '#e0392f', enabled: true, people: ['Eva'] },
+        ],
+        overrides: {},
+      }),
+    )
+  })
+  await page.goto('./#/cias')
+
+  const tabs = page.locator('.class-tabs').getByRole('tab')
+  await expect(tabs).toHaveText([/0 a 3 anos/, /Crianças/, /Intermediários/, /Adolescentes/])
+  // Sem "Ativa/Inativa": as abas substituem o mostrar/esconder
+  await expect(page.getByText('Inativa')).toHaveCount(0)
+
+  // Primeira aba: só a classe 0 a 3 anos
+  await expect(page.locator('.class-card')).toHaveCount(1)
+  await expect(page.locator('.people')).toContainText('Ana')
+  await expect(page.locator('.class-sheet:not(.export)')).toHaveCount(1)
+  await expect(page.locator('.class-sheet:not(.export) .cs-class')).toContainText('0 a 3 anos')
+
+  // Trocar de aba mostra outra classe (mesmo a que estava "inativa" antes)
+  await tabs.filter({ hasText: 'Crianças' }).click()
+  await expect(page.locator('.people')).toContainText('Divina')
+  await expect(page.locator('.people')).not.toContainText('Ana')
+  await expect(page.locator('.class-sheet:not(.export) .cs-class')).toContainText('Crianças')
+})
+
+test('botão de voltar tem o mesmo visual em todas as páginas', async ({ page }) => {
+  const look = async () =>
+    page.locator('a.back').evaluate((el) => {
+      const s = getComputedStyle(el)
+      return { radius: s.borderRadius, background: s.backgroundColor, border: s.borderTopStyle }
+    })
+  await page.goto('./#/oracao')
+  const oracao = await look()
+  expect(oracao.border).toBe('solid')
+  for (const route of ['./#/cias', './#/senhoras']) {
+    await page.goto(route)
+    expect(await look()).toEqual(oracao)
+  }
+})
+
 test('Senhoras: 5ª quarta aparece sem escala e o rodízio continua no mês seguinte', async ({ page }) => {
   await page.addInitScript(() => {
     localStorage.setItem(

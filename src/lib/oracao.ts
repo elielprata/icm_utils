@@ -62,6 +62,8 @@ export const CHURCH_COLORS = ['#e8892b', '#1f1f1f', '#4f9a3c', '#d7261e', '#1f4f
 const pad = (n: number) => String(n).padStart(2, '0')
 const clock = (minutes: number) => `${pad(Math.floor(minutes / 60) % 24)}:${pad(minutes % 60)}`
 export const slotLabel = (slot: number) => `${clock(slot * 15)} – ${clock(slot * 15 + 15)}`
+/** Só a hora em que o horário começa (cada um dura 15 min), ex.: "03:15" */
+export const slotStart = (slot: number) => clock(slot * 15)
 
 /** Turnos de 6 horas (24 horários cada) */
 export const SHIFTS = [

@@ -49,31 +49,3 @@ export function Modal({ title, onClose, children }: { title: string; onClose: ()
     </div>
   )
 }
-
-/** Abas de página (ex.: Horários · Motivos · Lista) */
-export function PageTabs<T extends string>({
-  tabs,
-  value,
-  onChange,
-}: {
-  tabs: { id: T; label: string }[]
-  value: T
-  onChange: (id: T) => void
-}) {
-  return (
-    <div className="page-tabs" role="tablist">
-      {tabs.map((t) => (
-        <button
-          key={t.id}
-          type="button"
-          role="tab"
-          aria-selected={t.id === value}
-          className={t.id === value ? 'on' : ''}
-          onClick={() => onChange(t.id)}
-        >
-          {t.label}
-        </button>
-      ))}
-    </div>
-  )
-}

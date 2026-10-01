@@ -49,7 +49,8 @@ GitHub Pages (`https://elielprata.github.io/icm_utils/`). Os textos da interface
 - `src/pages/`: `Home`, `CiasPage`, `SenhorasPage`, `oracao/` (`OracaoHome`, `OracaoAdmin`, `OracaoSignup`).
 - `src/lib/`: lógica pura e acesso a dados (`schedule`, `senhoras`, `oracao`, `oracaoPdf`, `motivosImage`,
   `storage`, `exportImage`, `firebase`).
-- `src/components/`: componentes; `Shareable` gera a imagem de um cartão e compartilha.
+- `src/components/`: componentes; `Shareable` gera a imagem de um cartão e compartilha; `PageTabs` são as abas
+  (estilo e botão "Voltar" iguais em todas as páginas, no `index.css`).
 - `src/pages/oracao/oracao.css`: estilos só da Oração (carregados com ela).
 
 ## Compartilhar (WhatsApp)
@@ -64,6 +65,8 @@ GitHub Pages (`https://elielprata.github.io/icm_utils/`). Os textos da interface
 ## Escala das CIAs
 
 - 4 classes (0 a 3 anos, Crianças, Intermediários, Adolescentes), cada uma com sua lista de professoras.
+- Uma **aba por classe** (cor da classe na aba): cada aba mostra só as professoras e a escala daquela classe.
+  Não existe mais "Ativa/Inativa".
 - Rodízio simples pela ordem da lista, continuando de um mês para o outro; dia padrão domingo.
 - Uma imagem por classe com os 3 meses (sem título genérico). Dados no `localStorage` (`escala-professores:v1`).
 
@@ -97,7 +100,8 @@ GitHub Pages (`https://elielprata.github.io/icm_utils/`). Os textos da interface
 - Telas: coordenador em abas (Horários · Links · Compartilhar · Configurar); a aba Compartilhar mostra duas opções
   que abrem **janelas** (lista; motivos); Configurar tem sub-abas (Período · Igrejas · Motivos · Coordenadores),
   cada uma com o seu "Salvar" (`PeriodForm` com `sections`). Motivos reúne o texto e a imagem. Prévias abrem em janela, nunca empilhadas na página. Inscrição em abas
-  (Horários · Motivos · Lista), horários em grade por turno.
+  (Horários · Motivos · Lista), horários em grade por turno: 4 colunas, cada quadradinho com a hora inicial
+  ("00:15") e o nome ou "Livre" embaixo, sem rótulos de hora do lado de fora.
 - Exemplos e textos de ajuda devem ser genéricos (ex.: "Ministérios"), nunca dados reais de uma igreja.
 - **Sempre que `firestore.rules` mudar, lembrar o usuário de publicar** no console do Firebase
   (Firestore → Regras → colar → Publicar). A configuração em `src/firebase-config.ts` não é secreta.

@@ -84,6 +84,21 @@ test.describe('inscrição pelo link da igreja', () => {
     expect((await pngSize(await png)).width).toBe(1800)
   })
 
+  test('cada quadradinho mostra a própria hora, sem rótulos do lado de fora', async ({ page }) => {
+    const db = await coordinatorDb()
+    const pid = await seedPeriod(db, [2])
+    await page.goto(`./#/oracao/${pid}/pio`)
+
+    await expect(page.locator('.sg-hour, .sg-q')).toHaveCount(0)
+    await expect(cell(page, '00:00').locator('.sg-time')).toHaveText('00:00')
+    await expect(cell(page, '00:00')).toContainText('Livre')
+    await expect(cell(page, '00:30').locator('.sg-time')).toHaveText('00:30')
+    await expect(cell(page, '00:30')).toContainText('Cleber')
+
+    await page.locator('.shift-tabs button', { hasText: 'Noite' }).click()
+    await expect(cell(page, '23:45').locator('.sg-time')).toHaveText('23:45')
+  })
+
   test('link com igreja errada avisa', async ({ page }) => {
     const db = await coordinatorDb()
     const pid = await seedPeriod(db)

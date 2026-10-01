@@ -1,7 +1,5 @@
 import type { CSSProperties, ReactNode } from 'react'
-import { SHIFTS, SLOTS_PER_SHIFT, slotLabel, type Church, type Entry } from '../../lib/oracao'
-
-const pad = (n: number) => String(n).padStart(2, '0')
+import { SHIFTS, SLOTS_PER_SHIFT, slotLabel, slotStart, type Church, type Entry } from '../../lib/oracao'
 
 interface GridProps {
   slots: Entry[][]
@@ -14,48 +12,37 @@ interface GridProps {
   emptyLabel?: (slot: number) => string
 }
 
-/** Um turno (6 horas) em grade: linha = hora, coluna = quarto de hora. */
+/** Um turno (6 horas) em grade de 4 colunas (uma hora por linha); cada quadradinho mostra a sua hora. */
 export function SlotGrid({ slots, churches, shift, onSelect, cellClass, emptyLabel }: GridProps) {
   const first = shift * SLOTS_PER_SHIFT
-  const hours = Array.from({ length: SLOTS_PER_SHIFT / 4 }, (_, h) => first / 4 + h)
+  const shiftSlots = Array.from({ length: SLOTS_PER_SHIFT }, (_, i) => first + i)
 
   return (
     <div className="slot-grid" role="grid">
-      <span />
-      {[':00', ':15', ':30', ':45'].map((q) => (
-        <span key={q} className="sg-q">
-          {q}
-        </span>
-      ))}
-      {hours.map((hour) => [
-        <span key={`h${hour}`} className="sg-hour">
-          {pad(hour)}h
-        </span>,
-        ...[0, 1, 2, 3].map((q) => {
-          const slot = hour * 4 + q
-          const people = slots[slot]
-          const color = people[0] ? churches[people[0].church]?.color : undefined
-          return (
-            <button
-              key={slot}
-              type="button"
-              className={`sg-cell${people.length ? '' : ' empty'} ${cellClass?.(slot) ?? ''}`}
-              style={{ '--cc': color } as CSSProperties}
-              aria-label={`${slotLabel(slot)}: ${people.map((p) => p.name).join(', ') || 'vago'}`}
-              onClick={() => onSelect(slot)}
-            >
-              {people.length ? (
-                <>
-                  <span className="sg-name">{people[0].name}</span>
-                  {people.length > 1 && <span className="sg-more">+{people.length - 1}</span>}
-                </>
-              ) : (
-                <span className="sg-empty">{emptyLabel?.(slot) ?? 'Vago'}</span>
-              )}
-            </button>
-          )
-        }),
-      ])}
+      {shiftSlots.map((slot) => {
+        const people = slots[slot]
+        const color = people[0] ? churches[people[0].church]?.color : undefined
+        return (
+          <button
+            key={slot}
+            type="button"
+            className={`sg-cell${people.length ? '' : ' empty'} ${cellClass?.(slot) ?? ''}`}
+            style={{ '--cc': color } as CSSProperties}
+            aria-label={`${slotLabel(slot)}: ${people.map((p) => p.name).join(', ') || 'vago'}`}
+            onClick={() => onSelect(slot)}
+          >
+            <span className="sg-time">{slotStart(slot)}</span>
+            {people.length ? (
+              <span className="sg-who">
+                <span className="sg-name">{people[0].name}</span>
+                {people.length > 1 && <span className="sg-more">+{people.length - 1}</span>}
+              </span>
+            ) : (
+              <span className="sg-empty">{emptyLabel?.(slot) ?? 'Vago'}</span>
+            )}
+          </button>
+        )
+      })}
     </div>
   )
 }

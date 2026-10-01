@@ -17,6 +17,7 @@ const {
   randomCode,
   shiftOf,
   slotLabel,
+  slotStart,
   SLOTS,
 } = await import('./oracao')
 
@@ -29,6 +30,7 @@ describe('horários', () => {
     expect(slotLabel(0)).toBe('00:00 – 00:15')
     expect(slotLabel(13)).toBe('03:15 – 03:30')
     expect(slotLabel(95)).toBe('23:45 – 00:00')
+    expect([0, 13, 95].map(slotStart)).toEqual(['00:00', '03:15', '23:45'])
   })
 
   it('separa em 4 turnos de 6 horas', () => {

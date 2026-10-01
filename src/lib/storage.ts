@@ -28,10 +28,10 @@ export function defaultState(): AppState {
   return {
     config: { startMonth: currentMonth(), months: 3, weekday: 0 },
     classes: [
-      { id: 'bercario', name: '0 a 3 anos', emoji: '🍼', color: '#e8457f', enabled: true, people: [] },
-      { id: 'criancas', name: 'Crianças', emoji: '🎨', color: '#f2a20c', enabled: true, people: [] },
-      { id: 'intermediarios', name: 'Intermediários', emoji: '📖', color: '#1f6fd1', enabled: true, people: [] },
-      { id: 'adolescentes', name: 'Adolescentes', emoji: '🎧', color: '#e0392f', enabled: true, people: [] },
+      { id: 'bercario', name: '0 a 3 anos', emoji: '🍼', color: '#e8457f', people: [] },
+      { id: 'criancas', name: 'Crianças', emoji: '🎨', color: '#f2a20c', people: [] },
+      { id: 'intermediarios', name: 'Intermediários', emoji: '📖', color: '#1f6fd1', people: [] },
+      { id: 'adolescentes', name: 'Adolescentes', emoji: '🎧', color: '#e0392f', people: [] },
     ],
     overrides: {},
   }

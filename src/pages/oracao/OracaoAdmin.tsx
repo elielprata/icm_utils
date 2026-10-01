@@ -5,7 +5,8 @@ import { ShareList, ShareMotivos } from '../../components/oracao/ShareOptions'
 import { MotivosImageField, useMotivosImage } from '../../components/oracao/MotivosImage'
 import { PeriodForm, type PeriodSection } from '../../components/oracao/PeriodForm'
 import { PeopleList } from '../../components/oracao/PeopleList'
-import { Modal, PageTabs, Sheet } from '../../components/oracao/Sheet'
+import { Modal, Sheet } from '../../components/oracao/Sheet'
+import { PageTabs } from '../../components/PageTabs'
 import { ChurchLegend, firstShiftWhere, ShiftTabs, SlotGrid } from '../../components/oracao/SlotGrid'
 import {
   adminAdd,

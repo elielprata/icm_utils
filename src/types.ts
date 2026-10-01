@@ -3,7 +3,6 @@ export interface ClassGroup {
   name: string
   emoji: string
   color: string
-  enabled: boolean
   /** A ordem define o rodízio. */
   people: string[]
 }

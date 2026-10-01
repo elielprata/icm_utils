@@ -183,30 +183,6 @@
 }
 
 /* ---------- Abas da página ---------- */
-.page-tabs {
-  display: flex;
-  gap: 4px;
-  overflow-x: auto;
-  margin: 0 0 14px;
-  padding-bottom: 2px;
-}
-
-.page-tabs button {
-  flex: 1 0 auto;
-  border: none;
-  border-radius: 10px;
-  padding: 9px 14px;
-  font-weight: 800;
-  background: #ebe5e2;
-  color: var(--muted);
-  white-space: nowrap;
-}
-
-.page-tabs button.on {
-  background: var(--wine);
-  color: #fff;
-}
-
 .period-title {
   display: flex;
   flex-wrap: wrap;
@@ -272,32 +248,33 @@
 
 .slot-grid {
   display: grid;
-  grid-template-columns: 40px repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 4px;
   font-variant-numeric: tabular-nums;
 }
 
-.sg-q {
-  text-align: center;
-  font-size: 0.72rem;
-  font-weight: 800;
-  color: var(--muted);
+/* A hora fica dentro do quadradinho, em cima do nome */
+.sg-time {
+  font-size: 0.95rem;
+  font-weight: 900;
+  color: var(--text);
 }
 
-.sg-hour {
-  display: grid;
-  place-items: center;
-  font-weight: 900;
-  font-size: 0.85rem;
+.sg-who {
+  display: flex;
+  gap: 3px;
+  align-items: baseline;
+  min-width: 0;
 }
 
 .sg-cell {
   min-width: 0;
-  min-height: 46px;
+  min-height: 52px;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 4px 6px;
+  gap: 2px;
+  padding: 5px 7px;
   border: 1px solid var(--border);
   border-left: 4px solid var(--cc, var(--border));
   border-radius: 8px;
@@ -322,7 +299,6 @@
 }
 
 .sg-cell.empty {
-  align-items: center;
   border-left-width: 1px;
   background: #f4f0ee;
 }
@@ -851,23 +827,6 @@
 }
 
 
-
-/* Voltar para "Meus períodos" bem visível */
-.oracao .back {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  border: 1px solid var(--border);
-  background: #fff;
-  color: var(--wine);
-  border-radius: 999px;
-  padding: 6px 14px;
-}
-
-.oracao .back:hover {
-  border-color: var(--wine);
-}
-
 /* PDF da lista completa */
 .pdf-actions {
   background: #fff;
@@ -1082,13 +1041,6 @@
 
 .preview-button {
   margin-top: 8px;
-}
-
-@media (max-width: 480px) {
-  .page-tabs button {
-    padding: 8px 9px;
-    font-size: 0.85rem;
-  }
 }
 
 /* Abas dentro de Configurar: mais discretas que as abas principais */
