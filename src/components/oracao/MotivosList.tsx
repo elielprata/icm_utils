@@ -1,17 +1,24 @@
-import { motivoLines } from '../../lib/oracao'
+import { parseMotivos } from '../../lib/oracao'
 
-/** Quadro "Motivos de oração" com um item por linha; não aparece se não houver motivos. */
+/** Quadro "Motivos de oração" com títulos de seção e itens; não aparece se não houver motivos. */
 export function MotivosList({ text, className = '' }: { text?: string; className?: string }) {
-  const lines = motivoLines(text)
-  if (lines.length === 0) return null
+  const sections = parseMotivos(text)
+  if (sections.length === 0) return null
   return (
     <div className={`motivos ${className}`}>
       <div className="motivos-title">Motivos de oração</div>
-      <ul>
-        {lines.map((line, i) => (
-          <li key={i}>{line}</li>
-        ))}
-      </ul>
+      {sections.map((s, i) => (
+        <section key={i} className="motivos-section">
+          {s.title && <h4>{s.title}</h4>}
+          {s.items.length > 0 && (
+            <ul>
+              {s.items.map((item, k) => (
+                <li key={k}>{item}</li>
+              ))}
+            </ul>
+          )}
+        </section>
+      ))}
     </div>
   )
 }

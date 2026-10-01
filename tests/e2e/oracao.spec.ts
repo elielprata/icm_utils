@@ -62,6 +62,7 @@ test.describe('inscrição pelo link da igreja', () => {
     const pid = await seedPeriod(db, [0, 1, 2, 50])
     await page.goto(`./#/oracao/${pid}/caj`)
     await page.getByRole('tab', { name: 'Motivos' }).click()
+    await expect(page.locator('.motivos h4')).toHaveText(['MOTIVOS PESSOAIS', 'MOTIVOS GERAIS'])
     await expect(page.locator('.motivos li')).toHaveCount(3)
 
     await page.getByRole('tab', { name: 'Lista' }).click()

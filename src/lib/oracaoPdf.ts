@@ -1,5 +1,5 @@
 import type { jsPDF as JsPDF } from 'jspdf'
-import { bySlot, formatRange, motivoLines, slotLabel, SLOTS, type Entry, type Period } from './oracao'
+import { bySlot, formatRange, parseMotivos, slotLabel, SLOTS, type Entry, type Period } from './oracao'
 
 type JsPDFConstructor = typeof JsPDF
 
@@ -24,17 +24,23 @@ const TEXT = '#2b2a33'
 const STRIPE = '#faf6f4'
 const EMPTY = '#fbf3e4'
 
+const W = 210
+const H = 297
+const M = 10
+const ROWS = SLOTS / 2
+const FOOTER = 8
+const COL_TITLE_H = 6
+/** Altura mínima de uma linha de horário para continuar legível */
+const MIN_ROW_H = 3.6
+
 /**
  * Lista completa em PDF (A4 em pé): título, motivos, legenda e os 96 horários em duas colunas,
  * com os nomes na cor de cada igreja. O texto continua texto: fica nítido em qualquer zoom.
+ * Se os motivos forem longos, a lista de horários vai inteira para a página seguinte.
  */
 export function buildOracaoPdf(jsPDF: JsPDFConstructor, period: Period, entries: Entry[]): Blob {
   const pdf = new jsPDF({ unit: 'mm', format: 'a4' })
-  const W = 210
-  const H = 297
-  const M = 10
   const slots = bySlot(entries)
-  const churches = Object.entries(period.churches).sort((a, b) => a[1].order - b[1].order)
   let y = M + 4
 
   // Cabeçalho
@@ -51,90 +57,23 @@ export function buildOracaoPdf(jsPDF: JsPDFConstructor, period: Period, entries:
   pdf.text(formatRange(period), W / 2, y, { align: 'center' })
   y += 5
 
-  // Motivos de oração
-  const motivos = motivoLines(period.motivos).map(pdfText).filter(Boolean)
-  if (motivos.length) {
-    pdf.setFontSize(8.5)
-    const lines = motivos.flatMap((m) => (pdf.splitTextToSize(`•  ${m}`, W - 2 * M - 12) as string[]))
-    const boxH = 7 + lines.length * 3.8 + 2
-    pdf.setFillColor('#f8e9ea').roundedRect(M, y, W - 2 * M, boxH, 2, 2, 'F')
-    pdf.setFillColor(WINE).rect(M, y, 1.2, boxH, 'F')
-    pdf.setFont('helvetica', 'bold').setFontSize(7).setTextColor(WINE)
-    pdf.text('MOTIVOS DE ORAÇÃO', M + 5, y + 5, { charSpace: 0.3 })
-    pdf.setFont('helvetica', 'normal').setFontSize(8.5).setTextColor(TEXT)
-    lines.forEach((line, i) => pdf.text(line, M + 5, y + 9.5 + i * 3.8))
-    y += boxH + 4
-  }
+  y = drawMotivos(pdf, period.motivos, y)
 
-  // Legenda
-  pdf.setFont('helvetica', 'bold').setFontSize(8)
-  const items = churches.map(([, c]) => ({ c, label: pdfText(c.name), w: pdf.getTextWidth(pdfText(c.name)) + 6 }))
-  let x = (W - items.reduce((sum, it) => sum + it.w + 4, -4)) / 2
-  for (const it of items) {
-    pdf.setFillColor(it.c.color).roundedRect(x, y - 2.6, 3, 3, 0.6, 0.6, 'F')
-    pdf.setTextColor(TEXT).text(it.label, x + 4.2, y)
-    x += it.w + 4
-  }
-  y += 5
-
-  // Horários: duas colunas de 48 linhas numa página; se o cabeçalho for grande, uma coluna por página
-  const rows = SLOTS / 2
-  const footer = 8
-  const titleH = 6
-  let rowH = (H - M - footer - y - titleH) / rows
-  const twoPages = rowH < 3.6
-  if (twoPages) rowH = Math.min(5.2, (H - 2 * M - footer - titleH) / rows)
-  const colGap = 5
-  const colW = twoPages ? W - 2 * M : (W - 2 * M - colGap) / 2
-  const timeW = 22
-
-  const drawColumn = (from: number, title: string, left: number, top: number) => {
-    pdf.setFillColor(WINE).roundedRect(left, top, colW, titleH, 1.5, 1.5, 'F')
-    pdf.rect(left, top + 3, colW, titleH - 3, 'F')
-    pdf.setFont('helvetica', 'bold').setFontSize(8).setTextColor('#ffffff')
-    pdf.text(title, left + colW / 2, top + 4.1, { align: 'center', charSpace: 0.3 })
-    let ry = top + titleH
-    for (let i = 0; i < rows; i++) {
-      const slot = from + i
-      const people = slots[slot]
-      if (people.length === 0) pdf.setFillColor(EMPTY).rect(left + timeW, ry, colW - timeW, rowH, 'F')
-      pdf.setFillColor(STRIPE).rect(left, ry, timeW, rowH, 'F')
-      pdf.setDrawColor('#ece4e0').setLineWidth(0.15).line(left, ry + rowH, left + colW, ry + rowH)
-      const baseline = ry + rowH / 2 + 1.1
-      pdf.setFont('helvetica', 'bold').setFontSize(7.2).setTextColor(TEXT)
-      pdf.text(pdfText(slotLabel(slot)), left + 1.8, baseline)
-
-      // Nomes coloridos, separados por " / "; a fonte diminui se não couber na linha
-      const parts = people.map((p) => ({ text: pdfText(p.name), color: period.churches[p.church]?.color ?? TEXT }))
-      const available = colW - timeW - 3
-      let size = 7.6
-      const width = () => {
-        pdf.setFontSize(size)
-        return parts.reduce((sum, p, k) => sum + pdf.getTextWidth(p.text) + (k ? pdf.getTextWidth(' / ') : 0), 0)
-      }
-      while (size > 4.6 && width() > available) size -= 0.2
-      let nx = left + timeW + 1.8
-      parts.forEach((p, k) => {
-        if (k) {
-          pdf.setTextColor(MUTED).text(' / ', nx, baseline)
-          nx += pdf.getTextWidth(' / ')
-        }
-        pdf.setTextColor(p.color).text(p.text, nx, baseline)
-        nx += pdf.getTextWidth(p.text)
-      })
-      ry += rowH
-    }
-    pdf.setDrawColor('#e3d9d5').setLineWidth(0.25).rect(left, top + titleH, colW, rowH * rows)
-  }
-
-  if (twoPages) {
-    drawColumn(0, 'MADRUGADA E MANHÃ', M, y)
+  // Lista de horários: na mesma página se couber com linhas legíveis; senão, numa página só dela
+  const legendH = 5
+  if ((H - M - FOOTER - y - legendH - COL_TITLE_H) / ROWS < MIN_ROW_H) {
     pdf.addPage()
-    drawColumn(rows, 'TARDE E NOITE', M, M)
-  } else {
-    drawColumn(0, 'MADRUGADA E MANHÃ', M, y)
-    drawColumn(rows, 'TARDE E NOITE', M + colW + colGap, y)
+    y = M + 4
+    pdf.setFont('helvetica', 'bold').setFontSize(12).setTextColor(WINE)
+    pdf.text(`Oração Ininterrupta  ·  ${formatRange(period)}`, W / 2, y, { align: 'center' })
+    y += 6
   }
+  y = drawLegend(pdf, period, y)
+  const rowH = Math.min(5.5, (H - M - FOOTER - y - COL_TITLE_H) / ROWS)
+  const colGap = 5
+  const colW = (W - 2 * M - colGap) / 2
+  drawColumn(pdf, period, slots, 0, 'MADRUGADA E MANHÃ', M, y, colW, rowH)
+  drawColumn(pdf, period, slots, ROWS, 'TARDE E NOITE', M + colW + colGap, y, colW, rowH)
 
   // Rodapé com o resumo
   const filled = slots.filter((s) => s.length > 0).length
@@ -144,4 +83,115 @@ export function buildOracaoPdf(jsPDF: JsPDFConstructor, period: Period, entries:
   })
 
   return pdf.output('blob')
+}
+
+/** Quadro dos motivos: títulos de seção em negrito, itens com marcador, espaço entre grupos. */
+function drawMotivos(pdf: JsPDF, text: string | undefined, top: number): number {
+  const sections = parseMotivos(text)
+  if (sections.length === 0) return top
+
+  const width = W - 2 * M - 12
+  const LINE = 3.8
+  const GAP = 1.8
+  type Line = { text: string; bold: boolean; indent: number }
+  const lines: (Line | 'gap')[] = []
+  sections.forEach((s, i) => {
+    if (i > 0) lines.push('gap')
+    if (s.title) {
+      pdf.setFont('helvetica', 'bold').setFontSize(8.8)
+      for (const t of pdf.splitTextToSize(pdfText(s.title), width) as string[]) lines.push({ text: t, bold: true, indent: 0 })
+    }
+    pdf.setFont('helvetica', 'normal').setFontSize(8.5)
+    for (const item of s.items) {
+      const wrapped = pdf.splitTextToSize(pdfText(item), width - 4) as string[]
+      wrapped.forEach((t, k) => lines.push({ text: k === 0 ? `•  ${t}` : t, bold: false, indent: k === 0 ? 0 : 3.2 }))
+    }
+  })
+
+  const contentH = lines.reduce((h, l) => h + (l === 'gap' ? GAP : LINE), 0)
+  const boxH = 8 + contentH + 2
+  pdf.setFillColor('#f8e9ea').roundedRect(M, top, W - 2 * M, boxH, 2, 2, 'F')
+  pdf.setFillColor(WINE).rect(M, top, 1.2, boxH, 'F')
+  pdf.setFont('helvetica', 'bold').setFontSize(7).setTextColor(WINE)
+  pdf.text('MOTIVOS DE ORAÇÃO', M + 5, top + 5, { charSpace: 0.3 })
+
+  let ly = top + 10
+  for (const l of lines) {
+    if (l === 'gap') {
+      ly += GAP
+      continue
+    }
+    pdf.setFont('helvetica', l.bold ? 'bold' : 'normal').setFontSize(l.bold ? 8.8 : 8.5).setTextColor(TEXT)
+    pdf.text(l.text, M + 5 + l.indent, ly)
+    if (l.bold) {
+      pdf.setDrawColor('#d9b7b9').setLineWidth(0.2).line(M + 5, ly + 0.8, M + 5 + pdf.getTextWidth(l.text), ly + 0.8)
+    }
+    ly += LINE
+  }
+  return top + boxH + 4
+}
+
+/** Legenda centralizada com a cor de cada igreja. */
+function drawLegend(pdf: JsPDF, period: Period, y: number): number {
+  const churches = Object.values(period.churches).sort((a, b) => a.order - b.order)
+  pdf.setFont('helvetica', 'bold').setFontSize(8)
+  const items = churches.map((c) => ({ c, label: pdfText(c.name), w: pdf.getTextWidth(pdfText(c.name)) + 6 }))
+  let x = (W - items.reduce((sum, it) => sum + it.w + 4, -4)) / 2
+  for (const it of items) {
+    pdf.setFillColor(it.c.color).roundedRect(x, y - 2.6, 3, 3, 0.6, 0.6, 'F')
+    pdf.setTextColor(TEXT).text(it.label, x + 4.2, y)
+    x += it.w + 4
+  }
+  return y + 5
+}
+
+/** Uma coluna de 48 horários, com os nomes coloridos (a fonte diminui se não couber na linha). */
+function drawColumn(
+  pdf: JsPDF,
+  period: Period,
+  slots: Entry[][],
+  from: number,
+  title: string,
+  left: number,
+  top: number,
+  colW: number,
+  rowH: number,
+) {
+  const timeW = 22
+  pdf.setFillColor(WINE).roundedRect(left, top, colW, COL_TITLE_H, 1.5, 1.5, 'F')
+  pdf.rect(left, top + 3, colW, COL_TITLE_H - 3, 'F')
+  pdf.setFont('helvetica', 'bold').setFontSize(8).setTextColor('#ffffff')
+  pdf.text(title, left + colW / 2, top + 4.1, { align: 'center', charSpace: 0.3 })
+
+  let ry = top + COL_TITLE_H
+  for (let i = 0; i < ROWS; i++) {
+    const slot = from + i
+    const people = slots[slot]
+    if (people.length === 0) pdf.setFillColor(EMPTY).rect(left + timeW, ry, colW - timeW, rowH, 'F')
+    pdf.setFillColor(STRIPE).rect(left, ry, timeW, rowH, 'F')
+    pdf.setDrawColor('#ece4e0').setLineWidth(0.15).line(left, ry + rowH, left + colW, ry + rowH)
+    const baseline = ry + rowH / 2 + 1.1
+    pdf.setFont('helvetica', 'bold').setFontSize(7.2).setTextColor(TEXT)
+    pdf.text(pdfText(slotLabel(slot)), left + 1.8, baseline)
+
+    const parts = people.map((p) => ({ text: pdfText(p.name), color: period.churches[p.church]?.color ?? TEXT }))
+    const available = colW - timeW - 3
+    let size = 7.6
+    const width = () => {
+      pdf.setFontSize(size)
+      return parts.reduce((sum, p, k) => sum + pdf.getTextWidth(p.text) + (k ? pdf.getTextWidth(' / ') : 0), 0)
+    }
+    while (size > 4.6 && width() > available) size -= 0.2
+    let nx = left + timeW + 1.8
+    parts.forEach((p, k) => {
+      if (k) {
+        pdf.setTextColor(MUTED).text(' / ', nx, baseline)
+        nx += pdf.getTextWidth(' / ')
+      }
+      pdf.setTextColor(p.color).text(p.text, nx, baseline)
+      nx += pdf.getTextWidth(p.text)
+    })
+    ry += rowH
+  }
+  pdf.setDrawColor('#e3d9d5').setLineWidth(0.25).rect(left, top + COL_TITLE_H, colW, rowH * ROWS)
 }

@@ -28,7 +28,7 @@ export async function seedPeriod(db: Awaited<ReturnType<typeof coordinatorDb>>, 
   const id = `e2e${Date.now()}`
   await setDoc(doc(db, 'periods', id), {
     motivo: 'Ministérios',
-    motivos: '* Pela nossa Pátria e pela nossa Nação\n* Pelas autoridades constituídas\n* Pelas eleições que se aproximam',
+    motivos: 'MOTIVOS PESSOAIS\n• Entrega ao Senhor para servir com dedicação.\n• Fidelidade nas responsabilidades na igreja.\nMOTIVOS GERAIS\n• Saúde dos servos.',
     start: '2030-06-01',
     end: '2030-06-30',
     churches: CHURCHES,

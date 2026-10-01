@@ -244,13 +244,54 @@ export async function adminRemove(periodId: string, id: string) {
 export const signupLink = (periodId: string, church: string) =>
   `${location.origin}${location.pathname}#/oracao/${periodId}/${church}`
 
-/** Motivos em lista: uma linha cada, sem marcadores ("*", "-", "•") e sem o título "Motivos de oração". */
-export function motivoLines(text = ''): string[] {
-  return text
-    .split('\n')
-    .map((line) => line.replace(/^\s*[*\-•]\s*/, '').trim())
-    .filter((line) => line && !/^motivos de ora[çc][ãa]o:?$/i.test(line))
+export interface MotivoSection {
+  /** Título da seção (linha sem marcador), ex.: "MOTIVOS PESSOAIS" */
+  title?: string
+  items: string[]
 }
+
+const BULLET = /^\s*[*\-•]\s*/
+
+/**
+ * Organiza os motivos como no papel:
+ * - linha com marcador ("•", "*" ou "-") → item;
+ * - linha sem marcador → título de seção em negrito;
+ * - linha em branco → separa grupos.
+ * Se o texto não tiver nenhum marcador, toda linha é item. O título "Motivos de oração" é ignorado
+ * (a página já mostra).
+ */
+export function parseMotivos(text = ''): MotivoSection[] {
+  const lines = text.split('\n').map((l) => l.trim())
+  const hasBullets = lines.some((l) => BULLET.test(l) && l.replace(BULLET, ''))
+  const sections: MotivoSection[] = []
+  let current: MotivoSection | null = null
+  const close = () => {
+    if (current && (current.title || current.items.length)) sections.push(current)
+    current = null
+  }
+
+  for (const line of lines) {
+    if (!line) {
+      close()
+      continue
+    }
+    if (/^motivos de ora[çc][ãa]o:?$/i.test(line)) continue
+    const isItem = !hasBullets || BULLET.test(line)
+    const content = line.replace(BULLET, '').trim()
+    if (!content) continue
+    if (isItem) {
+      current ??= { items: [] }
+      current.items.push(content)
+    } else {
+      close()
+      current = { title: content, items: [] }
+    }
+  }
+  close()
+  return sections
+}
+
+export const hasMotivos = (text?: string) => parseMotivos(text).length > 0
 
 export const formatDate = (iso: string) => iso.split('-').reverse().join('/')
 

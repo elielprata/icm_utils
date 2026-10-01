@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { CHURCH_COLORS, MOTIVOS_MAX, randomCode, type Church, type Period } from '../../lib/oracao'
+import { CHURCH_COLORS, hasMotivos, MOTIVOS_MAX, randomCode, type Church, type Period } from '../../lib/oracao'
+import { MotivosList } from './MotivosList'
 
 export type PeriodDraft = Pick<Period, 'motivo' | 'motivos' | 'start' | 'end' | 'churches'>
 
@@ -83,16 +84,26 @@ export function PeriodForm({ initial, counts = {}, submitLabel, onSubmit }: Prop
       </div>
 
       <label className="field motivos-field">
-        <span>Motivos de oração (um por linha)</span>
+        <span>Motivos de oração</span>
         <textarea
           id="motivos"
-          rows={6}
+          rows={8}
           maxLength={MOTIVOS_MAX}
           value={draft.motivos ?? ''}
-          placeholder="Escreva um motivo por linha"
+          placeholder={'MOTIVOS PESSOAIS\n• Primeiro motivo\n• Segundo motivo\n\nMOTIVOS GERAIS\n• Outro motivo'}
           onChange={(e) => setDraft({ ...draft, motivos: e.target.value })}
         />
       </label>
+      <p className="hint motivos-help">
+        Comece cada motivo com <b>•</b>, <b>*</b> ou <b>-</b>. Uma linha sem marcador vira <b>título em negrito</b>, e
+        uma linha em branco separa os grupos. Pode colar direto do PDF.
+      </p>
+      {hasMotivos(draft.motivos) && (
+        <div className="motivos-preview">
+          <span>Como vai aparecer:</span>
+          <MotivosList text={draft.motivos} />
+        </div>
+      )}
 
       <h3 className="sub">Igrejas</h3>
       <div className="church-edit">

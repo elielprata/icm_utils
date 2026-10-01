@@ -10,7 +10,8 @@ const {
   entryId,
   formatRange,
   minFill,
-  motivoLines,
+  hasMotivos,
+  parseMotivos,
   nextLevel,
   openSlots,
   randomCode,
@@ -93,10 +94,30 @@ describe('trocar ou cancelar sozinho', () => {
 })
 
 describe('textos', () => {
-  it('motivos: uma linha cada, sem marcadores e sem o título', () => {
-    const text = 'MOTIVOS DE ORAÇÃO\n\n* Pela nossa Pátria 🇧🇷  \n- Pelas autoridades\n• Pelas eleições\n   \nSem marcador'
-    expect(motivoLines(text)).toEqual(['Pela nossa Pátria 🇧🇷', 'Pelas autoridades', 'Pelas eleições', 'Sem marcador'])
-    expect(motivoLines(undefined)).toEqual([])
+  it('motivos colados do PDF: títulos sem marcador viram seções', () => {
+    const text = [
+      'MOTIVOS PESSOAIS ',
+      '• Entrega ao Senhor para servir com dedicação.',
+      '• Aperfeiçoamento do entendimento de Obra. ',
+      'MOTIVOS GERAIS',
+      '• Conservação da liberdade de Culto.',
+      '• Saúde dos servos.',
+    ].join('\n')
+    expect(parseMotivos(text)).toEqual([
+      { title: 'MOTIVOS PESSOAIS', items: ['Entrega ao Senhor para servir com dedicação.', 'Aperfeiçoamento do entendimento de Obra.'] },
+      { title: 'MOTIVOS GERAIS', items: ['Conservação da liberdade de Culto.', 'Saúde dos servos.'] },
+    ])
+  })
+
+  it('motivos: linha em branco separa grupos e o título "Motivos de oração" é ignorado', () => {
+    const text = 'MOTIVOS DE ORAÇÃO\n\n* Pela nossa Pátria 🇧🇷  \n- Pelas autoridades\n   \n• Pelas eleições'
+    expect(parseMotivos(text)).toEqual([{ items: ['Pela nossa Pátria 🇧🇷', 'Pelas autoridades'] }, { items: ['Pelas eleições'] }])
+  })
+
+  it('motivos sem nenhum marcador: toda linha é item', () => {
+    expect(parseMotivos('Pela nação\nPelas famílias')).toEqual([{ items: ['Pela nação', 'Pelas famílias'] }])
+    expect(parseMotivos(undefined)).toEqual([])
+    expect(hasMotivos('  \n ')).toBe(false)
   })
 
   it('formata o período', () => {

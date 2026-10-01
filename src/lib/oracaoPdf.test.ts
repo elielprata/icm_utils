@@ -50,7 +50,7 @@ describe('buildOracaoPdf', () => {
     expect(pageCount(src)).toBe(1)
   })
 
-  it('com motivos muito longos, usa uma página para cada metade do dia', async () => {
+  it('com motivos muito longos, a lista de horários vai inteira para a página seguinte', async () => {
     const motivos = Array.from({ length: 30 }, (_, i) => `Motivo de oração número ${i + 1} com um texto bem comprido para ocupar espaço`).join('\n')
     const src = await pdfSource(buildOracaoPdf(jsPDF, { ...period, motivos }, []))
     expect(pageCount(src)).toBe(2)

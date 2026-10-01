@@ -13,7 +13,7 @@ import {
   cancelMine,
   formatDate,
   formatRange,
-  motivoLines,
+  hasMotivos,
   moveMine,
   nextLevel,
   NAME_MAX,
@@ -74,10 +74,10 @@ function Signup({ periodId, churchCode }: { periodId: string; churchCode: string
   const church = period?.churches[churchCode]
   if (!period || !church) return <Shell><p className="status warn">Link inválido. Peça o link certo ao coordenador.</p></Shell>
 
-  const hasMotivos = motivoLines(period.motivos).length > 0
+  const showMotivos = hasMotivos(period.motivos)
   const tabs: { id: Tab; label: string }[] = [
     { id: 'horarios', label: 'Horários' },
-    ...(hasMotivos ? [{ id: 'motivos' as Tab, label: 'Motivos' }] : []),
+    ...(showMotivos ? [{ id: 'motivos' as Tab, label: 'Motivos' }] : []),
     { id: 'lista', label: 'Lista' },
   ]
 
