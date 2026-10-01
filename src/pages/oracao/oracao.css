@@ -932,3 +932,96 @@
 .motivos-sheet .motivos-title {
   display: none;
 }
+
+/* Imagem dos motivos (arte enviada pelo coordenador) */
+.motivos-image {
+  display: block;
+  width: 100%;
+  max-width: 540px;
+  margin: 0 auto;
+  border-radius: 12px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.1);
+}
+
+.image-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.file-button {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 10px;
+  padding: 9px 16px;
+  background: var(--wine);
+  color: #fff;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.file-button.disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.file-button input {
+  display: none;
+}
+
+/* Tocar na imagem dos motivos para ver em tela cheia */
+.zoom-trigger {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: zoom-in;
+}
+
+.zoom-hint {
+  display: block;
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.zoom-view {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  overflow: auto;
+  background: rgba(20, 16, 18, 0.92);
+  padding: 56px 0 24px;
+  text-align: center;
+}
+
+.zoom-view img {
+  display: inline-block;
+  width: auto;
+  max-width: none;
+  height: auto;
+}
+
+/* No computador cabe na largura; no celular fica no tamanho original e dá para arrastar e ampliar */
+@media (min-width: 1100px) {
+  .zoom-view img {
+    max-width: 100%;
+  }
+}
+
+.zoom-close {
+  position: fixed;
+  top: calc(12px + env(safe-area-inset-top, 0px));
+  right: 12px;
+  border: none;
+  border-radius: 999px;
+  padding: 8px 14px;
+  background: #fff;
+  color: var(--text);
+  font-weight: 800;
+  z-index: 31;
+}

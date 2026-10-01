@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { FirebaseError } from 'firebase/app'
 import { ShareList, ShareMotivos } from '../../components/oracao/ShareOptions'
+import { useMotivosImage } from '../../components/oracao/MotivosImage'
 import { PeopleList } from '../../components/oracao/PeopleList'
 import { PageTabs, Sheet } from '../../components/oracao/Sheet'
 import { ChurchLegend, firstShiftWhere, ShiftTabs, SlotGrid } from '../../components/oracao/SlotGrid'
@@ -64,6 +65,7 @@ export function OracaoSignup({ periodId, churchCode }: { periodId: string; churc
 
 function Signup({ periodId, churchCode }: { periodId: string; churchCode: string }) {
   const { period, entries, error } = usePeriodData(periodId)
+  const image = useMotivosImage(periodId)
   const [tab, setTab] = useState<Tab>('horarios')
 
   if (error) return <Shell><p className="status warn">Não foi possível abrir a lista. Verifique a internet e tente de novo.</p></Shell>
@@ -71,7 +73,7 @@ function Signup({ periodId, churchCode }: { periodId: string; churchCode: string
   const church = period?.churches[churchCode]
   if (!period || !church) return <Shell><p className="status warn">Link inválido. Peça o link certo ao coordenador.</p></Shell>
 
-  const showMotivos = hasMotivos(period.motivos)
+  const showMotivos = hasMotivos(period.motivos) || Boolean(image)
   const tabs: { id: Tab; label: string }[] = [
     { id: 'horarios', label: 'Horários' },
     ...(showMotivos ? [{ id: 'motivos' as Tab, label: 'Motivos' }] : []),
@@ -93,7 +95,7 @@ function Signup({ periodId, churchCode }: { periodId: string; churchCode: string
       <PageTabs tabs={tabs} value={tab} onChange={setTab} />
 
       {tab === 'horarios' && <Horarios period={period} entries={entries} churchCode={churchCode} />}
-      {tab === 'motivos' && <ShareMotivos period={period} />}
+      {tab === 'motivos' && <ShareMotivos period={period} image={image} />}
       {tab === 'lista' && <ShareList period={period} entries={entries} />}
     </Shell>
   )

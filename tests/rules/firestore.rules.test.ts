@@ -207,6 +207,37 @@ describe('chave secreta: trocar ou cancelar sozinho', () => {
   })
 })
 
+describe('imagem dos motivos', () => {
+  const IMAGE = 'data:image/webp;base64,' + 'A'.repeat(1000) + '=='
+  const media = (db: Firestore, name = 'motivos') => doc(db, 'periods', 'p1', 'media', name)
+  const data = (image = IMAGE) => ({ image, updatedAt: serverTimestamp() })
+
+  it('coordenador envia, troca e remove', async () => {
+    await assertSucceeds(setDoc(media(coord()), data()))
+    await assertSucceeds(setDoc(media(coord()), data('data:image/jpeg;base64,BBBB')))
+    await assertSucceeds(deleteDoc(media(coord())))
+  })
+
+  it('qualquer um com o link vê a imagem', async () => {
+    await seed((db) => setDoc(media(db), data()))
+    await assertSucceeds(getDoc(media(anon())))
+  })
+
+  it('quem não é coordenador não envia nem remove', async () => {
+    await assertFails(setDoc(media(anon()), data()))
+    await assertFails(setDoc(media(intruder()), data()))
+    await seed((db) => setDoc(media(db), data()))
+    await assertFails(deleteDoc(media(intruder())))
+  })
+
+  it('recusa imagem grande demais, formato desconhecido ou outro nome', async () => {
+    await assertFails(setDoc(media(coord()), data('data:image/webp;base64,' + 'A'.repeat(960_000))))
+    await assertFails(setDoc(media(coord()), data('data:text/html;base64,AAAA')))
+    await assertFails(setDoc(media(coord()), data('<script>alert(1)</script>')))
+    await assertFails(setDoc(media(coord(), 'outra'), data()))
+  })
+})
+
 describe('coordenador', () => {
   beforeEach(() => signUp(anon(), 7, 0))
 

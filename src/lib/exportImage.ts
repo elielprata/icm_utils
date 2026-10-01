@@ -26,7 +26,7 @@ export type ShareResult = 'shared' | 'cancelled' | 'copied' | 'downloaded' | 're
  * Sem suporte: copia a imagem para colar no WhatsApp Web; em último caso, baixa o arquivo.
  */
 export async function shareImage(blob: Blob, fileName: string): Promise<ShareResult> {
-  const file = new File([blob], fileName, { type: 'image/png' })
+  const file = new File([blob], fileName, { type: blob.type || 'image/png' })
 
   if (navigator.canShare?.({ files: [file] })) {
     try {
@@ -41,6 +41,8 @@ export async function shareImage(blob: Blob, fileName: string): Promise<ShareRes
   }
 
   try {
+    // A área de transferência só aceita PNG; outros formatos vão para o download.
+    if (blob.type && blob.type !== 'image/png') throw new Error('formato')
     await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
     return 'copied'
   } catch {

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { User } from 'firebase/auth'
 import { PageHeader } from '../../components/PageHeader'
 import { ShareList, ShareMotivos } from '../../components/oracao/ShareOptions'
+import { MotivosImageField, useMotivosImage } from '../../components/oracao/MotivosImage'
 import { PeriodForm } from '../../components/oracao/PeriodForm'
 import { PeopleList } from '../../components/oracao/PeopleList'
 import { PageTabs, Sheet } from '../../components/oracao/Sheet'
@@ -42,6 +43,7 @@ export function OracaoAdmin({ periodId }: { periodId: string }) {
 
 function Admin({ periodId, user }: { periodId: string; user: User }) {
   const { period, entries, error } = usePeriodData(periodId)
+  const image = useMotivosImage(periodId)
   const [tab, setTab] = useState<Tab>('horarios')
 
   if (error) return <p className="status warn">Não foi possível carregar o período: {error}</p>
@@ -77,10 +79,10 @@ function Admin({ periodId, user }: { periodId: string; user: User }) {
         <>
           <h2 className="share-title">Lista de horários</h2>
           <ShareList period={period} entries={entries} />
-          {hasMotivos(period.motivos) && (
+          {(hasMotivos(period.motivos) || image) && (
             <>
               <h2 className="share-title">Motivos de oração</h2>
-              <ShareMotivos period={period} />
+              <ShareMotivos period={period} image={image} />
             </>
           )}
         </>
@@ -97,6 +99,7 @@ function Admin({ periodId, user }: { periodId: string; user: User }) {
               onSubmit={(draft) => updatePeriod(period.id, draft)}
             />
           </section>
+          <MotivosImageField periodId={period.id} image={image} />
           <Coordinators period={period} me={user.email!.toLowerCase()} />
         </>
       )}

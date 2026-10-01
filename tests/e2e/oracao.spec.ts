@@ -144,6 +144,57 @@ test.describe('coordenador', () => {
     await expect.poll(async () => (await getDocs(collection(db, 'periods', pid, 'entries'))).docs.map((d) => d.id)).toEqual(['0_0'])
   })
 
+  test('envia a imagem dos motivos (reduzida) e ela aparece para quem se inscreve', async ({ page }) => {
+    const db = await coordinatorDb()
+    const pid = await seedPeriod(db)
+    await page.goto(`./#/oracao/admin/${pid}`)
+    await page.getByRole('tab', { name: 'Configurar' }).click()
+
+    // Uma "arte" grande (1600 × 2400) gerada no próprio navegador
+    const dataUrl = await page.evaluate(() => {
+      const canvas = document.createElement('canvas')
+      canvas.width = 1600
+      canvas.height = 2400
+      const ctx = canvas.getContext('2d')!
+      ctx.fillStyle = '#f4f1ee'
+      ctx.fillRect(0, 0, 1600, 2400)
+      ctx.fillStyle = '#8a1c24'
+      ctx.font = 'bold 140px sans-serif'
+      ctx.fillText('MOTIVOS DE ORAÇÃO', 80, 400)
+      return canvas.toDataURL('image/png')
+    })
+    await page.locator('#motivos-image').setInputFiles({
+      name: 'motivos.png',
+      mimeType: 'image/png',
+      buffer: Buffer.from(dataUrl.split(',')[1], 'base64'),
+    })
+    await expect(page.locator('.panel img.motivos-image')).toBeVisible()
+    // A tela mostra a imagem antes de o servidor confirmar; espera chegar no banco.
+    const stored = async () => (await getDoc(doc(db, 'periods', pid, 'media', 'motivos'))).data()?.image as string | undefined
+    await expect.poll(stored).toMatch(/^data:image\/webp;base64,/)
+    const saved = (await stored())!
+    expect(saved.length).toBeLessThan(950_000)
+    const size = await page.evaluate(async (src) => {
+      const img = new Image()
+      img.src = src
+      await img.decode()
+      return [img.naturalWidth, img.naturalHeight]
+    }, saved)
+    expect(size).toEqual([1080, 1620])
+
+    // Quem se inscreve vê e baixa a imagem na aba Motivos
+    await page.goto(`./#/oracao/${pid}/pio`)
+    await page.getByRole('tab', { name: 'Motivos' }).click()
+    await expect(page.locator('.card-wrap img.motivos-image')).toBeVisible()
+    await page.getByRole('button', { name: 'Ampliar a imagem' }).click()
+    await expect(page.locator('.zoom-view img')).toBeVisible()
+    await page.getByRole('button', { name: '✕ Fechar' }).click()
+    await expect(page.locator('.zoom-view')).toHaveCount(0)
+    const download = page.waitForEvent('download')
+    await page.locator('.card-wrap', { has: page.locator('img.motivos-image') }).getByRole('button', { name: 'baixar' }).click()
+    expect((await download).suggestedFilename()).toBe('motivos-de-oracao.webp')
+  })
+
   test('volta para a lista de períodos', async ({ page }) => {
     const db = await coordinatorDb()
     const pid = await seedPeriod(db)

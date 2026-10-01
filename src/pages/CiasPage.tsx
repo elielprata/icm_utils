@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+
 import type { AppState } from '../types'
 import { defaultState, loadState, saveState } from '../lib/storage'
 import { PageHeader } from '../components/PageHeader'
@@ -21,20 +22,33 @@ export function CiasPage() {
 
   return (
     <div className="app">
-      <PageHeader title="🧒 Escala das CIAs" onReset={() => setState(defaultState())} />
+      <PageHeader
+        title="🧒 Escala das CIAs"
+        onReset={() => setState(defaultState())}
+      />
 
-      <ConfigPanel config={state.config} onChange={(config) => setState((s) => ({ ...s, config }))} />
+      <ConfigPanel
+        config={state.config}
+        onChange={(config) => setState((s) => ({ ...s, config }))}
+      />
 
       <section className="panel">
-        <h2>Classes e responsáveis</h2>
-        <p className="hint">A ordem da lista define o rodízio: 1º, 2º, 3º… e volta ao 1º.</p>
+        <h2>Classes e Professoras</h2>
+        <p className="hint">
+          A ordem da lista define o rodízio: 1º, 2º, 3º… e volta ao 1º.
+        </p>
         <div className="classes-grid">
           {state.classes.map((g) => (
             <ClassEditor
               key={g.id}
               group={g}
               onChange={(group) =>
-                setState((s) => ({ ...s, classes: s.classes.map((c) => (c.id === group.id ? group : c)) }))
+                setState((s) => ({
+                  ...s,
+                  classes: s.classes.map((c) =>
+                    c.id === group.id ? group : c,
+                  ),
+                }))
               }
             />
           ))}
