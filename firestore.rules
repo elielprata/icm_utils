@@ -3,7 +3,9 @@ rules_version = '2';
 // Regras da Oração Ininterrupta.
 // - Qualquer pessoa com o link vê o período e se inscreve, sem login.
 // - Inscrição pública: só como próxima pessoa do horário, nunca substituindo alguém.
-// - Só coordenadores (e-mails em `admins`, login Google) editam o período e removem/encaixam nomes.
+// - Quem se inscreveu recebe uma chave secreta (coleção `secrets`, ilegível) e com ela pode trocar ou
+//   cancelar a própria inscrição antes do início do período ou nas primeiras 24 h.
+// - Só coordenadores (e-mails em `admins`, login Google) editam o período e mexem em qualquer nome.
 service cloud.firestore {
   match /databases/{database}/documents {
 
@@ -25,6 +27,26 @@ service cloud.firestore {
     }
 
     match /periods/{periodId} {
+      function entryDoc(id) {
+        return /databases/$(database)/documents/periods/$(periodId)/entries/$(id);
+      }
+
+      function secretDoc(id) {
+        return /databases/$(database)/documents/periods/$(periodId)/secrets/$(id);
+      }
+
+      function releaseDoc(id) {
+        return /databases/$(database)/documents/periods/$(periodId)/releases/$(id);
+      }
+
+      function period() {
+        return get(/databases/$(database)/documents/periods/$(periodId)).data;
+      }
+
+      function isAdmin() {
+        return signedIn() && myEmail() in period().admins;
+      }
+
       allow get: if true;
       // A busca "meus períodos" filtra por admins array-contains o próprio e-mail.
       allow list: if signedIn() && myEmail() in resource.data.admins;
@@ -37,36 +59,67 @@ service cloud.firestore {
       allow delete: if signedIn() && myEmail() in resource.data.admins;
 
       match /entries/{entryId} {
-        function period() {
-          return get(/databases/$(database)/documents/periods/$(periodId)).data;
-        }
-
-        function isAdmin() {
-          return signedIn() && myEmail() in period().admins;
-        }
-
-        function validEntry() {
-          let e = request.resource.data;
+        function validEntry(e) {
           return e.keys().hasOnly(['slot', 'level', 'name', 'church', 'createdAt'])
             && e.slot is int && e.slot >= 0 && e.slot < 96
             && e.level is int && e.level >= 0 && e.level < 50
             && entryId == string(e.slot) + '_' + string(e.level)
             && e.name is string && e.name.size() > 0 && e.name.size() <= 40
-            && e.church is string && e.church in period().churches
-            && e.createdAt == request.time;
+            && e.church is string && e.church in period().churches;
         }
 
         // Pública: só a próxima posição do horário (a anterior já existe).
-        function nextInSlot() {
-          let e = request.resource.data;
+        function nextInSlot(e) {
           return e.level == 0
-            || exists(/databases/$(database)/documents/periods/$(periodId)/entries/$(string(e.slot) + '_' + string(e.level - 1)));
+            || exists(entryDoc(string(e.slot) + '_' + string(e.level - 1)));
+        }
+
+        // Antes do início do período (meia-noite UTC do dia de início) ou até 24 h depois da inscrição.
+        function inChangeWindow() {
+          let s = period().start.split('-');
+          return request.time < timestamp.date(int(s[0]), int(s[1]), int(s[2]))
+            || request.time < resource.data.createdAt + duration.value(24, 'h');
+        }
+
+        // A pessoa provou a chave secreta gravando-a em `releases` no mesmo lote.
+        function releasedByOwner() {
+          return getAfter(releaseDoc(entryId)).data.key == get(secretDoc(entryId)).data.key;
         }
 
         allow read: if true;
         // `create` falha se o documento já existe: duas pessoas não pegam a mesma vaga.
-        allow create: if validEntry() && (isAdmin() || nextInSlot());
-        allow update, delete: if isAdmin();
+        allow create: if validEntry(request.resource.data)
+          && request.resource.data.createdAt == request.time
+          && (isAdmin() || nextInSlot(request.resource.data));
+        // Coordenador corrige nome ou igreja (o horário e a posição não mudam por aqui).
+        allow update: if isAdmin()
+          && validEntry(request.resource.data)
+          && request.resource.data.slot == resource.data.slot
+          && request.resource.data.level == resource.data.level
+          && request.resource.data.createdAt == resource.data.createdAt;
+        allow delete: if isAdmin() || (inChangeWindow() && releasedByOwner());
+      }
+
+      // Chave secreta de cada inscrição. Ninguém lê; só é gravada junto com uma inscrição nova.
+      match /secrets/{entryId} {
+        function validSecret() {
+          let s = request.resource.data;
+          return s.keys().hasOnly(['key']) && s.key is string && s.key.size() >= 20 && s.key.size() <= 64;
+        }
+
+        allow read: if false;
+        allow create, update: if validSecret()
+          && !exists(entryDoc(entryId))
+          && existsAfter(entryDoc(entryId));
+        // Só depois que a inscrição deixa de existir.
+        allow delete: if !existsAfter(entryDoc(entryId));
+      }
+
+      // Prova da chave para liberar a própria inscrição. Ninguém lê.
+      match /releases/{entryId} {
+        allow read: if false;
+        allow create, update: if request.resource.data.keys().hasOnly(['key'])
+          && request.resource.data.key == get(secretDoc(entryId)).data.key;
       }
     }
   }

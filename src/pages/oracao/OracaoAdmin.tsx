@@ -4,12 +4,21 @@ import { PageHeader } from '../../components/PageHeader'
 import { Shareable } from '../../components/Shareable'
 import { OracaoSheet } from '../../components/oracao/OracaoSheet'
 import { PeriodForm } from '../../components/oracao/PeriodForm'
+import { PeopleList } from '../../components/oracao/PeopleList'
+import { PageTabs, Sheet } from '../../components/oracao/Sheet'
+import { ChurchLegend, firstShiftWhere, ShiftTabs, SlotGrid } from '../../components/oracao/SlotGrid'
 import {
-  addEntry,
+  adminAdd,
+  adminMove,
+  adminRemove,
+  adminUpdate,
   bySlot,
+  formatRange,
   minFill,
+  NAME_MAX,
   nextLevel,
-  removeEntry,
+  shiftOf,
+  SHIFTS,
   signupLink,
   slotLabel,
   SLOTS,
@@ -19,6 +28,8 @@ import {
 } from '../../lib/oracao'
 import { CoordinatorGate } from './CoordinatorGate'
 import { usePeriodData } from './usePeriodData'
+
+type Tab = 'horarios' | 'links' | 'imagem' | 'configurar'
 
 export function OracaoAdmin({ periodId }: { periodId: string }) {
   return (
@@ -31,6 +42,7 @@ export function OracaoAdmin({ periodId }: { periodId: string }) {
 
 function Admin({ periodId, user }: { periodId: string; user: User }) {
   const { period, entries, error } = usePeriodData(periodId)
+  const [tab, setTab] = useState<Tab>('horarios')
 
   if (error) return <p className="status warn">Não foi possível carregar o período: {error}</p>
   if (period === undefined) return <p className="hint">Carregando…</p>
@@ -44,11 +56,24 @@ function Admin({ periodId, user }: { periodId: string; user: User }) {
 
   return (
     <>
-      <ChurchLinks period={period} counts={counts} />
-      <Slots period={period} entries={entries} />
+      <div className="period-title">
+        <strong>{period.motivo || 'Oração Ininterrupta'}</strong>
+        <span>{formatRange(period)}</span>
+      </div>
+      <PageTabs
+        tabs={[
+          { id: 'horarios', label: 'Horários' },
+          { id: 'links', label: 'Links' },
+          { id: 'imagem', label: 'Imagem' },
+          { id: 'configurar', label: 'Configurar' },
+        ]}
+        value={tab}
+        onChange={setTab}
+      />
 
-      <section>
-        <h2 className="preview-title">Imagem da lista</h2>
+      {tab === 'horarios' && <Slots period={period} entries={entries} />}
+      {tab === 'links' && <ChurchLinks period={period} counts={counts} />}
+      {tab === 'imagem' && (
         <div className="cards">
           <Shareable
             fileName="oracao-ininterrupta.png"
@@ -56,20 +81,22 @@ function Admin({ periodId, user }: { periodId: string; user: User }) {
             render={(exporting) => <OracaoSheet period={period} entries={entries} exporting={exporting} />}
           />
         </div>
-      </section>
-
-      <section className="panel">
-        <h2>Período e igrejas</h2>
-        <PeriodForm
-          key={JSON.stringify([period.motivo, period.motivos, period.start, period.end, period.churches])}
-          initial={period}
-          counts={counts}
-          submitLabel="Salvar alterações"
-          onSubmit={(draft) => updatePeriod(period.id, draft)}
-        />
-      </section>
-
-      <Coordinators period={period} me={user.email!.toLowerCase()} />
+      )}
+      {tab === 'configurar' && (
+        <>
+          <section className="panel">
+            <h2>Período e igrejas</h2>
+            <PeriodForm
+              key={JSON.stringify([period.motivo, period.motivos, period.start, period.end, period.churches])}
+              initial={period}
+              counts={counts}
+              submitLabel="Salvar alterações"
+              onSubmit={(draft) => updatePeriod(period.id, draft)}
+            />
+          </section>
+          <Coordinators period={period} me={user.email!.toLowerCase()} />
+        </>
+      )}
     </>
   )
 }
@@ -108,88 +135,219 @@ function ChurchLinks({ period, counts }: { period: Period; counts: Record<string
   )
 }
 
+type Editing = { entry: Entry; name: string; church: string } | null
+
 function Slots({ period, entries }: { period: Period; entries: Entry[] }) {
-  const [adding, setAdding] = useState<number | null>(null)
-  const [name, setName] = useState('')
-  const [church, setChurch] = useState(Object.keys(period.churches)[0] ?? '')
-  const [error, setError] = useState<string | null>(null)
   const slots = bySlot(entries)
+  const churchCodes = Object.keys(period.churches)
+  const [shift, setShift] = useState(() => firstShiftWhere((s) => slots[s].length === 0))
+  const [selected, setSelected] = useState<number | null>(null)
+  const [moving, setMoving] = useState<Entry | null>(null)
+  const [moveTarget, setMoveTarget] = useState<number | null>(null)
+  const [editing, setEditing] = useState<Editing>(null)
+  const [newName, setNewName] = useState('')
+  const [newChurch, setNewChurch] = useState(churchCodes[0] ?? '')
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
   const filled = slots.filter((s) => s.length > 0).length
   const min = minFill(slots)
+  const emptyIn = (sh: number) => slots.filter((s, slot) => s.length === 0 && shiftOf(slot) === sh).length
 
-  const add = async (slot: number) => {
-    if (!name.trim()) return
+  const run = async (action: () => Promise<unknown>) => {
+    setBusy(true)
     setError(null)
     try {
-      await addEntry(period.id, slot, nextLevel(slots[slot]), name, church)
-      setAdding(null)
-      setName('')
+      await action()
+      return true
     } catch (e) {
       setError((e as Error).message)
+      return false
+    } finally {
+      setBusy(false)
     }
   }
 
-  const remove = async (e: Entry) => {
-    if (!confirm(`Tirar ${e.name} de ${slotLabel(e.slot)}?`)) return
-    await removeEntry(period.id, e.id).catch((err: Error) => setError(err.message))
+  const closeAll = () => {
+    setSelected(null)
+    setEditing(null)
+    setMoveTarget(null)
+    setNewName('')
+  }
+
+  const select = (slot: number) => {
+    if (moving) {
+      if (slot !== moving.slot) setMoveTarget(slot)
+      return
+    }
+    setSelected(slot)
   }
 
   return (
     <section className="panel">
-      <h2>Horários</h2>
-      <p className="progress">
-        <b>{filled}</b> de {SLOTS} horários preenchidos ·{' '}
+      <div className="stat">
+        <span>
+          <b>{filled}</b> de {SLOTS} horários preenchidos
+        </span>
+        <span>{SLOTS - filled} vagos</span>
+      </div>
+      <div className="bar">
+        <i style={{ width: `${(filled / SLOTS) * 100}%` }} />
+      </div>
+      <p className="hint">
         {min === 0
-          ? `inscrição aberta só nos ${SLOTS - filled} horários vagos`
-          : `todos têm ${min} pessoa${min > 1 ? 's' : ''}: inscrição aberta em qualquer horário`}
+          ? 'A inscrição pelo link está aberta só nos horários vagos.'
+          : `Todos têm ${min} pessoa${min > 1 ? 's' : ''}: a inscrição pelo link está aberta em qualquer horário.`}{' '}
+        Toque num horário para mover, corrigir, tirar ou encaixar alguém.
       </p>
-      <p className="hint">Como coordenador, você pode tirar nomes (✕) e encaixar alguém em qualquer horário (+).</p>
       {error && <p className="status warn">{error}</p>}
-      <div className="admin-slots">
-        {slots.map((people, slot) => (
-          <div key={slot} className={`admin-slot${people.length ? '' : ' empty'}`}>
-            <span className="time">{slotLabel(slot)}</span>
-            <span className="who">
-              {people.map((e) => (
-                <span key={e.id} className="person" style={{ borderColor: period.churches[e.church]?.color }}>
-                  <span style={{ color: period.churches[e.church]?.color }}>{e.name}</span>
-                  <button aria-label={`Tirar ${e.name}`} onClick={() => remove(e)}>
-                    ✕
-                  </button>
-                </span>
-              ))}
-              {people.length === 0 && <span className="vago">Vago</span>}
-            </span>
-            <button className="plus" aria-label={`Encaixar alguém em ${slotLabel(slot)}`} onClick={() => setAdding(slot)}>
-              +
-            </button>
-            {adding === slot && (
-              <form
-                className="encaixar"
-                onSubmit={(e) => {
-                  e.preventDefault()
-                  add(slot)
-                }}
-              >
-                <input autoFocus placeholder="Nome" maxLength={40} value={name} onChange={(e) => setName(e.target.value)} />
-                <select value={church} onChange={(e) => setChurch(e.target.value)} aria-label="Igreja">
-                  {Object.entries(period.churches).map(([code, c]) => (
-                    <option key={code} value={code}>
-                      {c.name}
-                    </option>
-                  ))}
-                </select>
-                <button className="primary" type="submit">
+
+      {moving && (
+        <div className="moving-banner">
+          <span>
+            Movendo <b>{moving.name}</b> ({slotLabel(moving.slot)}): toque no horário de destino.
+          </span>
+          <button className="ghost" onClick={() => setMoving(null)}>
+            Cancelar
+          </button>
+        </div>
+      )}
+
+      <ShiftTabs shift={shift} onChange={setShift} badge={emptyIn} />
+      <SlotGrid
+        slots={slots}
+        churches={period.churches}
+        shift={shift}
+        onSelect={select}
+        cellClass={(s) =>
+          [slots[s].length === 0 && 'open', (selected === s || moveTarget === s) && 'selected', moving?.slot === s && 'mine']
+            .filter(Boolean)
+            .join(' ')
+        }
+      />
+      <ChurchLegend churches={period.churches} />
+
+      {selected !== null && !moving && (
+        <Sheet title={slotLabel(selected)} subtitle={SHIFTS[shiftOf(selected)].name} onClose={closeAll}>
+          <PeopleList
+            people={slots[selected]}
+            churches={period.churches}
+            actions={(e) => (
+              <span className="pl-actions">
+                <button className="ghost" onClick={() => { setMoving(e); setSelected(null) }}>
+                  Mover
+                </button>
+                <button className="ghost" onClick={() => setEditing({ entry: e, name: e.name, church: e.church })}>
+                  Editar
+                </button>
+                <button
+                  className="ghost danger"
+                  disabled={busy}
+                  onClick={() => confirm(`Tirar ${e.name} de ${slotLabel(e.slot)}?`) && run(() => adminRemove(period.id, e.id))}
+                >
+                  Tirar
+                </button>
+              </span>
+            )}
+          />
+
+          {editing && (
+            <form
+              className="sheet-form"
+              onSubmit={async (ev) => {
+                ev.preventDefault()
+                if (!editing.name.trim()) return
+                const ok = await run(() =>
+                  adminUpdate(period.id, editing.entry.id, { name: editing.name.trim().slice(0, NAME_MAX), church: editing.church }),
+                )
+                if (ok) setEditing(null)
+              }}
+            >
+              <b>Editar {editing.entry.name}</b>
+              <input
+                aria-label="Nome"
+                value={editing.name}
+                maxLength={NAME_MAX}
+                onChange={(ev) => setEditing({ ...editing, name: ev.target.value })}
+              />
+              <select aria-label="Igreja" value={editing.church} onChange={(ev) => setEditing({ ...editing, church: ev.target.value })}>
+                {churchCodes.map((code) => (
+                  <option key={code} value={code}>
+                    {period.churches[code].name}
+                  </option>
+                ))}
+              </select>
+              <div className="sheet-buttons">
+                <button type="button" className="ghost" onClick={() => setEditing(null)}>
+                  Voltar
+                </button>
+                <button className="primary" disabled={busy}>
+                  Salvar
+                </button>
+              </div>
+            </form>
+          )}
+
+          {!editing && (
+            <form
+              className="sheet-form"
+              onSubmit={async (ev) => {
+                ev.preventDefault()
+                if (!newName.trim()) return
+                const ok = await run(() => adminAdd(period.id, selected, nextLevel(slots[selected]), newName, newChurch))
+                if (ok) setNewName('')
+              }}
+            >
+              <b>Encaixar alguém aqui</b>
+              <input aria-label="Nome" placeholder="Nome" value={newName} maxLength={NAME_MAX} onChange={(ev) => setNewName(ev.target.value)} />
+              <select aria-label="Igreja" value={newChurch} onChange={(ev) => setNewChurch(ev.target.value)}>
+                {churchCodes.map((code) => (
+                  <option key={code} value={code}>
+                    {period.churches[code].name}
+                  </option>
+                ))}
+              </select>
+              <div className="sheet-buttons">
+                <button type="button" className="ghost" onClick={closeAll}>
+                  Fechar
+                </button>
+                <button className="primary" disabled={busy || !newName.trim()}>
                   Encaixar
                 </button>
-                <button className="ghost" type="button" onClick={() => setAdding(null)}>
-                  Cancelar
-                </button>
-              </form>
-            )}
+              </div>
+            </form>
+          )}
+        </Sheet>
+      )}
+
+      {moving && moveTarget !== null && (
+        <Sheet
+          title={`Mover ${moving.name} para ${slotLabel(moveTarget)}?`}
+          subtitle={`Sai de ${slotLabel(moving.slot)}.${slots[moveTarget].length ? ` Já tem ${slots[moveTarget].length} pessoa(s) no destino.` : ''}`}
+          onClose={() => setMoveTarget(null)}
+        >
+          <PeopleList people={slots[moveTarget]} churches={period.churches} />
+          <div className="sheet-buttons">
+            <button className="ghost" onClick={() => setMoveTarget(null)}>
+              Voltar
+            </button>
+            <button
+              className="primary"
+              disabled={busy}
+              onClick={async () => {
+                const ok = await run(() => adminMove(period.id, moving, moveTarget, nextLevel(slots[moveTarget])))
+                if (ok) {
+                  setShift(shiftOf(moveTarget))
+                  setMoving(null)
+                  setMoveTarget(null)
+                }
+              }}
+            >
+              Mover
+            </button>
           </div>
-        ))}
-      </div>
+        </Sheet>
+      )}
     </section>
   )
 }
@@ -204,7 +362,7 @@ function Coordinators({ period, me }: { period: Period; me: string }) {
     <section className="panel">
       <h2>Coordenadores</h2>
       <p className="hint">
-        Quem estiver nesta lista entra com a conta Google e pode editar o período, tirar nomes e encaixar pessoas.
+        Quem estiver nesta lista entra com a conta Google e pode editar o período, mover, tirar e encaixar pessoas.
       </p>
       <ul className="admins">
         {period.admins.map((a) => (

@@ -43,8 +43,11 @@ export function PeriodForm({ initial, counts = {}, submitLabel, onSubmit }: Prop
     setError(null)
     setSaving(true)
     try {
+      // Só os campos do formulário: `initial` pode ser o período inteiro (com id, admins…),
+      // e as regras do banco recusam campos a mais.
       await onSubmit({
-        ...draft,
+        start: draft.start,
+        end: draft.end,
         motivo: draft.motivo.trim(),
         motivos: (draft.motivos ?? '').trim(),
         churches: Object.fromEntries(churches.map(([code, c]) => [code, { ...c, name: c.name.trim() }])),
@@ -65,7 +68,7 @@ export function PeriodForm({ initial, counts = {}, submitLabel, onSubmit }: Prop
             id="motivo"
             value={draft.motivo}
             maxLength={120}
-            placeholder="Ex.: Ministério Pr. Aginaldo"
+            placeholder="Ex.: Ministérios"
             onChange={(e) => setDraft({ ...draft, motivo: e.target.value })}
           />
         </label>
@@ -86,7 +89,7 @@ export function PeriodForm({ initial, counts = {}, submitLabel, onSubmit }: Prop
           rows={6}
           maxLength={MOTIVOS_MAX}
           value={draft.motivos ?? ''}
-          placeholder={'Pela nossa Pátria e pela nossa Nação 🇧🇷\nPelas autoridades constituídas\nPelas eleições que se aproximam'}
+          placeholder="Escreva um motivo por linha"
           onChange={(e) => setDraft({ ...draft, motivos: e.target.value })}
         />
       </label>
