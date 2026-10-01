@@ -36,7 +36,7 @@ type Tab = 'horarios' | 'links' | 'imagem' | 'configurar'
 export function OracaoAdmin({ periodId }: { periodId: string }) {
   return (
     <div className="app oracao">
-      <PageHeader title="🙏 Oração Ininterrupta" back="#/oracao" backLabel="Meus períodos" />
+      <PageHeader title="🙏 Oração Ininterrupta" back="#/oracao" backLabel="Minhas listas" />
       <CoordinatorGate>{(user) => <Admin periodId={periodId} user={user} />}</CoordinatorGate>
     </div>
   )
@@ -47,11 +47,11 @@ function Admin({ periodId, user }: { periodId: string; user: User }) {
   const image = useMotivosImage(periodId)
   const [tab, setTab] = useState<Tab>('horarios')
 
-  if (error) return <p className="status warn">Não foi possível carregar o período: {error}</p>
+  if (error) return <p className="status warn">Não foi possível carregar a lista: {error}</p>
   if (period === undefined) return <p className="hint">Carregando…</p>
-  if (period === null) return <p className="status warn">Período não encontrado.</p>
+  if (period === null) return <p className="status warn">Lista não encontrada.</p>
   if (!period.admins.includes(user.email!.toLowerCase())) {
-    return <p className="status warn">Você não é coordenador deste período. Peça para um coordenador incluir {user.email}.</p>
+    return <p className="status warn">Você não é secretário desta lista. Peça para um secretário incluir {user.email}.</p>
   }
 
   const counts: Record<string, number> = {}
@@ -119,10 +119,10 @@ function ConfigTab({
       <div className="config-tabs">
         <PageTabs
           tabs={[
-            { id: 'periodo', label: 'Período' },
+            { id: 'periodo', label: 'Lista' },
             { id: 'igrejas', label: 'Igrejas' },
             { id: 'motivos', label: 'Motivos' },
-            { id: 'coordenadores', label: 'Coordenadores' },
+            { id: 'coordenadores', label: 'Secretários' },
           ]}
           value={section}
           onChange={setSection}
@@ -440,9 +440,9 @@ function Coordinators({ period, me }: { period: Period; me: string }) {
 
   return (
     <section className="panel">
-      <h2>Coordenadores</h2>
+      <h2>Secretários</h2>
       <p className="hint">
-        Quem estiver nesta lista entra com a conta Google e pode editar o período, mover, tirar e encaixar pessoas.
+        Quem estiver nesta lista entra com a conta Google e pode editar a lista, mover, tirar e encaixar pessoas.
       </p>
       <ul className="admins">
         {period.admins.map((a) => (

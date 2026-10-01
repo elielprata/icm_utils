@@ -53,6 +53,16 @@ GitHub Pages (`https://elielprata.github.io/icm_utils/`). Os textos da interface
   (estilo e botão "Voltar" iguais em todas as páginas, no `index.css`).
 - `src/pages/oracao/oracao.css`: estilos só da Oração (carregados com ela).
 
+## Termos, textos e símbolos (Igreja Cristã Maranata)
+
+- **Sem símbolo de cruz** em ícones e artes (a igreja não costuma usar).
+- Na Oração: quem administra é o **secretário** (não "coordenador"); o que se cria é uma **lista** (não "período").
+  Nos nomes internos do código continuam `admins`, `Period` etc.
+- Os textos explicam **só para que o sistema serve**; nunca interpretar a prática da igreja (ex.: não chamar a
+  Oração Ininterrupta de "corrente de oração"). Na dúvida sobre um termo, perguntar.
+- Ícone do site (`public/favicon.svg`: calendário com ✓) e prévia do link (`public/og-image.png`, tags `og:` no
+  `index.html`) são genéricos, para todas as utilidades.
+
 ## Nomes de pessoas
 
 Sempre com a primeira letra de cada palavra maiúscula (`formatName` em `src/lib/names.ts`): "maria EDNA" →
@@ -110,7 +120,7 @@ pelo coordenador). Nomes de igrejas não são alterados.
 
 - 96 horários de 15 min; a lista vale para o período inteiro (mesmo horário todos os dias).
 - Várias igrejas por período, cada uma com cor e **link próprio** de inscrição (códigos aleatórios, não timestamp).
-- **Coordenador** = quem cria o período (login Google) + e-mails adicionados em "Coordenadores". Só eles editam,
+- **Secretário** = quem cria a lista (login Google) + e-mails adicionados em "Secretários". Só eles editam,
   movem, corrigem, tiram e encaixam (fora da regra).
 - **Regra das vagas:** só repete horário quando todos tiverem alguém (aplicada pelo site). O banco garante que duas
   pessoas não peguem a mesma vaga (id do documento `horário_posição`).

@@ -1039,3 +1039,40 @@
   border-color: var(--wine);
   color: var(--wine);
 }
+
+/* Página da Oração para quem não entrou: para que serve */
+.oracao-intro {
+  margin: 10px 0 14px;
+  font-size: 1.02rem;
+  max-width: 65ch;
+}
+
+.signup-callout {
+  display: grid;
+  gap: 2px;
+  background: #e9f6ec;
+  border: 1.5px solid #9fd3ab;
+  border-radius: 14px;
+  padding: 12px 16px;
+}
+
+.signup-callout > b {
+  color: #1e7a3c;
+  font-size: 1.02rem;
+}
+
+.how-steps {
+  margin: 0;
+  padding-left: 22px;
+  display: grid;
+  gap: 8px;
+}
+
+.how-steps li::marker {
+  color: var(--wine);
+  font-weight: 900;
+}
+
+.oracao .login {
+  border: 2px solid var(--wine);
+}

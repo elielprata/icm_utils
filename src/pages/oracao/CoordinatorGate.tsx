@@ -20,21 +20,40 @@ export function CoordinatorGate({ children }: { children: (user: User) => ReactN
   }
   if (user === undefined) return <p className="hint">Carregando…</p>
   if (!user) {
+    // Explica só para que o sistema serve (sem interpretar a prática da igreja)
     return (
-      <section className="panel login">
-        <h2>Área do coordenador</h2>
-        <p className="hint">
-          Entre com sua conta Google para criar períodos e acompanhar as inscrições. Quem só vai se inscrever não
-          precisa entrar: basta o link da igreja.
+      <>
+        <p className="oracao-intro">
+          Aqui se organiza a lista da Oração Ininterrupta, com <b>uma ou mais igrejas</b> preenchendo a mesma lista,
+          que depois é compartilhada em PDF ou imagem.
         </p>
-        <button
-          className="primary"
-          onClick={() => signInWithGoogle().catch((e: Error) => setError(e.message))}
-        >
-          Entrar com Google
-        </button>
-        {error && <p className="status warn">{error}</p>}
-      </section>
+
+        <div className="signup-callout">
+          <b>🙋 Vai se inscrever?</b>
+          <span>
+            Abra o <b>link que a sua igreja mandou</b> no WhatsApp e escolha um horário livre. Não precisa criar conta.
+          </span>
+        </div>
+
+        <section className="panel">
+          <h2>Como funciona</h2>
+          <ol className="how-steps">
+            <li>O secretário cria a lista (datas e motivos) e cadastra as igrejas.</li>
+            <li>Cada igreja recebe o seu link e manda no grupo.</li>
+            <li>Cada pessoa escolhe um horário livre. Só repete horário quando todos tiverem alguém.</li>
+            <li>A lista completa é compartilhada em PDF ou imagem.</li>
+          </ol>
+        </section>
+
+        <section className="panel login">
+          <h2>É secretário?</h2>
+          <p className="hint">Entre com a conta Google para criar listas, enviar os links e acompanhar as inscrições.</p>
+          <button className="primary" onClick={() => signInWithGoogle().catch((e: Error) => setError(e.message))}>
+            Entrar com Google
+          </button>
+          {error && <p className="status warn">{error}</p>}
+        </section>
+      </>
     )
   }
   return (

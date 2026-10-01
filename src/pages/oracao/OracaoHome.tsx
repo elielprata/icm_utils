@@ -38,17 +38,17 @@ function Periods({ user }: { user: User }) {
     <>
       <section className="panel">
         <div className="panel-head">
-          <h2>Seus períodos de oração</h2>
+          <h2>Suas listas de oração</h2>
           {!creating && (
             <button className="primary" onClick={() => setCreating(true)}>
-              + Novo período
+              + Nova lista
             </button>
           )}
         </div>
         {error && <p className="status warn">Não foi possível carregar: {error}</p>}
         {periods === null && !error && <p className="hint">Carregando…</p>}
         {periods?.length === 0 && !creating && (
-          <p className="hint">Nenhum período ainda. Crie o primeiro e envie o link de cada igreja.</p>
+          <p className="hint">Nenhuma lista ainda. Crie a primeira e envie o link de cada igreja.</p>
         )}
         <div className="period-list">
           {periods?.map((p) => (
@@ -69,8 +69,8 @@ function Periods({ user }: { user: User }) {
 
       {creating && (
         <section className="panel">
-          <h2>Novo período</h2>
-          <PeriodForm initial={emptyDraft()} submitLabel="Criar período" onSubmit={create} />
+          <h2>Nova lista</h2>
+          <PeriodForm initial={emptyDraft()} submitLabel="Criar lista" onSubmit={create} />
         </section>
       )}
     </>

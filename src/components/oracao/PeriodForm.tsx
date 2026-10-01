@@ -46,7 +46,7 @@ export function PeriodForm({ initial, counts = {}, submitLabel, onSubmit, sectio
     })
 
   const submit = async () => {
-    if (!draft.start || !draft.end || draft.end < draft.start) return setError('Confira as datas do período.')
+    if (!draft.start || !draft.end || draft.end < draft.start) return setError('Confira as datas da lista.')
     if (churches.length === 0) return setError('Cadastre pelo menos uma igreja.')
     if (churches.some(([, c]) => !c.name.trim())) return setError('Dê um nome para todas as igrejas.')
     setError(null)

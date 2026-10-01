@@ -73,7 +73,7 @@ function Signup({ periodId, churchCode }: { periodId: string; churchCode: string
   if (error) return <Shell><p className="status warn">Não foi possível abrir a lista. Verifique a internet e tente de novo.</p></Shell>
   if (period === undefined) return <Shell><p className="hint">Carregando…</p></Shell>
   const church = period?.churches[churchCode]
-  if (!period || !church) return <Shell><p className="status warn">Link inválido. Peça o link certo ao coordenador.</p></Shell>
+  if (!period || !church) return <Shell><p className="status warn">Link inválido. Peça o link certo ao secretário.</p></Shell>
 
   const showMotivos = hasMotivos(period.motivos) || Boolean(image)
   const tabs: { id: Tab; label: string }[] = [
@@ -154,7 +154,7 @@ function Horarios({ period, entries, churchCode }: { period: Period; entries: En
       setSheet(null)
       window.scrollTo({ top: 0, behavior: 'smooth' })
     } catch (err) {
-      fail(err, moving ? 'Não foi possível trocar: o prazo terminou ou a vaga acabou de ser pega. Fale com o coordenador se precisar.' : 'Esse horário acabou de ser pego por outra pessoa. Escolha outro.')
+      fail(err, moving ? 'Não foi possível trocar: o prazo terminou ou a vaga acabou de ser pega. Fale com o secretário se precisar.' : 'Esse horário acabou de ser pego por outra pessoa. Escolha outro.')
       setSheet(null)
     } finally {
       setBusy(false)
@@ -169,7 +169,7 @@ function Horarios({ period, entries, churchCode }: { period: Period; entries: En
       saveMine(mine.filter((x) => x.id !== m.id))
       setMessage({ ok: true, text: 'Seu horário foi cancelado.' })
     } catch (err) {
-      fail(err, 'O prazo para cancelar sozinho terminou. Fale com o coordenador.')
+      fail(err, 'O prazo para cancelar sozinho terminou. Fale com o secretário.')
     } finally {
       setBusy(false)
       setSheet(null)
@@ -205,7 +205,7 @@ function Horarios({ period, entries, churchCode }: { period: Period; entries: En
                 </button>
               </div>
             ) : (
-              <small>Para trocar ou cancelar, fale com o coordenador.</small>
+              <small>Para trocar ou cancelar, fale com o secretário.</small>
             )}
           </div>
         )
@@ -223,7 +223,7 @@ function Horarios({ period, entries, churchCode }: { period: Period; entries: En
         <p className="moving-banner">Toque numa vaga livre para trocar. Seu horário atual está em amarelo.</p>
       ) : (
         <p className="hint rule">
-          Cada pessoa ora 15 minutos, no mesmo horário, todos os dias do período.{' '}
+          Cada pessoa ora 15 minutos, no mesmo horário, todos os dias de {formatRange(period)}.{' '}
           {min === 0
             ? `Primeiro preenchemos os horários vagos (${open.size} ainda livres); depois todos voltam a abrir.`
             : `Todos os horários já têm ${min} pessoa${min > 1 ? 's' : ''}: pode escolher qualquer um.`}

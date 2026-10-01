@@ -107,10 +107,25 @@ test.describe('inscrição pelo link da igreja', () => {
     const pid = await seedPeriod(db)
     await page.goto(`./#/oracao/${pid}/naoexiste`)
     await expect(page.getByText('Link inválido')).toBeVisible()
+    await expect(page.getByText('Link inválido')).toContainText('secretário')
   })
 })
 
-test.describe('coordenador', () => {
+test('sem entrar, a página explica para que serve e chama de secretário', async ({ page }) => {
+  await page.goto('./#/oracao')
+  const main = page.locator('.app')
+  await expect(main).toContainText('uma ou mais igrejas')
+  await expect(main.getByText('Vai se inscrever?')).toBeVisible()
+  await expect(main).toContainText('link que a sua igreja mandou')
+  await expect(main.getByText('É secretário?')).toBeVisible()
+  await expect(main.getByRole('button', { name: 'Entrar com Google' })).toBeVisible()
+  // Sem "coordenador" e sem explicar a prática da igreja
+  await expect(main).not.toContainText(/coordenador/i)
+  await expect(main).not.toContainText(/corrente/i)
+  await expect(main).not.toContainText(/período/i)
+})
+
+test.describe('secretário', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('./#/oracao')
     await page.waitForFunction(() => 'emulatorSignIn' in window)
@@ -118,15 +133,15 @@ test.describe('coordenador', () => {
     await expect(page.getByText(`Conectado como ${COORD}`)).toBeVisible()
   })
 
-  test('cria um período com duas igrejas', async ({ page }) => {
-    await page.getByRole('button', { name: '+ Novo período' }).click()
+  test('cria uma lista com duas igrejas', async ({ page }) => {
+    await page.getByRole('button', { name: '+ Nova lista' }).click()
     await page.locator('#motivo').fill('Ministérios')
     await page.locator('#motivos').fill('Pela nação\nPelas famílias')
     await page.getByRole('button', { name: '+ Adicionar igreja' }).click()
     await page.getByRole('button', { name: '+ Adicionar igreja' }).click()
     await page.getByLabel('Nome da igreja').nth(0).fill('Pioneira')
     await page.getByLabel('Nome da igreja').nth(1).fill('Itupiranga')
-    await page.getByRole('button', { name: 'Criar período' }).click()
+    await page.getByRole('button', { name: 'Criar lista' }).click()
     await expect(page).toHaveURL(/#\/oracao\/admin\//)
     await page.getByRole('tab', { name: 'Links' }).click()
     await expect(page.locator('.link-row')).toHaveCount(2)
@@ -139,9 +154,9 @@ test.describe('coordenador', () => {
     await page.getByRole('tab', { name: 'Configurar' }).click()
 
     const config = page.locator('.config-tabs')
-    await expect(config.getByRole('tab')).toHaveText(['Período', 'Igrejas', 'Motivos', 'Coordenadores'])
+    await expect(config.getByRole('tab')).toHaveText(['Lista', 'Igrejas', 'Motivos', 'Secretários'])
 
-    // Período (aberta por padrão): título e datas, sem igrejas nem motivos
+    // Lista (aberta por padrão): título e datas, sem igrejas nem motivos
     await expect(page.locator('#motivo')).toBeVisible()
     await expect(page.locator('#start')).toBeVisible()
     await expect(page.locator('#motivos')).toHaveCount(0)
@@ -155,14 +170,14 @@ test.describe('coordenador', () => {
     await config.getByRole('tab', { name: 'Motivos' }).click()
     await expect(page.locator('#motivos')).toBeVisible()
     await expect(page.getByText('Imagem dos motivos (opcional)')).toBeVisible()
-    await expect(page.getByText('Coordenadores', { exact: true })).toHaveCount(1) // só a aba
+    await expect(page.getByText('Secretários', { exact: true })).toHaveCount(1) // só a aba
 
-    await config.getByRole('tab', { name: 'Coordenadores' }).click()
+    await config.getByRole('tab', { name: 'Secretários' }).click()
     await expect(page.getByPlaceholder('email@gmail.com')).toBeVisible()
     await expect(page.locator('#motivos')).toHaveCount(0)
   })
 
-  test('edita título e motivos de um período existente', async ({ page }) => {
+  test('edita título e motivos de uma lista existente', async ({ page }) => {
     const db = await coordinatorDb()
     const pid = await seedPeriod(db)
     await page.goto(`./#/oracao/admin/${pid}`)
@@ -280,11 +295,11 @@ test.describe('coordenador', () => {
     await expect(motivos.getByRole('button', { name: /PDF/ })).toHaveCount(0)
   })
 
-  test('volta para a lista de períodos', async ({ page }) => {
+  test('volta para Minhas listas', async ({ page }) => {
     const db = await coordinatorDb()
     const pid = await seedPeriod(db)
     await page.goto(`./#/oracao/admin/${pid}`)
-    await page.getByRole('link', { name: '← Meus períodos' }).click()
-    await expect(page.getByRole('heading', { name: 'Seus períodos de oração' })).toBeVisible()
+    await page.getByRole('link', { name: '← Minhas listas' }).click()
+    await expect(page.getByRole('heading', { name: 'Suas listas de oração' })).toBeVisible()
   })
 })
