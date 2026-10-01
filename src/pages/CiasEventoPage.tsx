@@ -10,14 +10,10 @@ import {
   type CiasEvento,
   type TurmaEvento,
 } from '../lib/ciasEvento'
-import { compressImage } from '../lib/imageFile'
 import { formatName } from '../lib/names'
 import { PageHeader } from '../components/PageHeader'
 import { Shareable } from '../components/Shareable'
 import { EventCard } from '../components/EventCard'
-
-/** Arte guardada no navegador: menor que a da Oração, para sobrar espaço no aparelho. */
-const ART_MAX_CHARS = 700_000
 
 /** Evento das CIAs (Evangelização, Seminário…): uma tela só e uma imagem com todas as turmas. */
 export function CiasEventoPage() {
@@ -25,29 +21,15 @@ export function CiasEventoPage() {
   const [classes] = useState(() => loadState().classes)
   const [evento, setEvento] = useState<CiasEvento>(() => loadEvento(classes))
   const [error, setError] = useState<string | null>(null)
-  const [sending, setSending] = useState(false)
   const nothingShown = visibleTurmas(classes, evento.turmas).length === 0
 
   useEffect(() => {
-    if (!saveEvento(evento)) setError('Não foi possível salvar no aparelho. Tente uma imagem menor.')
+    if (!saveEvento(evento)) setError('Não foi possível salvar no aparelho.')
   }, [evento])
 
   const set = (patch: Partial<CiasEvento>) => setEvento((e) => ({ ...e, ...patch }))
   const setTurma = (id: string, patch: Partial<TurmaEvento>) =>
     setEvento((e) => ({ ...e, turmas: { ...e.turmas, [id]: editTurma(e.turmas[id], patch) } }))
-
-  const chooseImage = async (file: File | undefined) => {
-    if (!file) return
-    setSending(true)
-    setError(null)
-    try {
-      set({ image: await compressImage(file, ART_MAX_CHARS) })
-    } catch (e) {
-      setError((e as Error).message)
-    } finally {
-      setSending(false)
-    }
-  }
 
   return (
     <div className="app">
@@ -82,31 +64,7 @@ export function CiasEventoPage() {
           </label>
         </div>
 
-        <div className="field event-image">
-          <span>Imagem do evento</span>
-          {evento.image && <img className="event-art" src={evento.image} alt="Arte do evento" />}
-          <div className="image-row">
-            <label className={`file-button${sending ? ' disabled' : ''}`}>
-              {sending ? 'Enviando…' : evento.image ? 'Trocar imagem' : 'Escolher imagem'}
-              <input
-                id="ev-image"
-                type="file"
-                accept="image/*"
-                disabled={sending}
-                onChange={(e) => {
-                  chooseImage(e.target.files?.[0])
-                  e.target.value = ''
-                }}
-              />
-            </label>
-            {evento.image && (
-              <button type="button" className="ghost" onClick={() => set({ image: null })}>
-                Remover
-              </button>
-            )}
-          </div>
-          <p className="hint">Sem imagem, a escala usa a arte padrão das CIAs.</p>
-        </div>
+        <p className="hint">A arte do evento é a mesma para todo mundo e já vem no site.</p>
         {error && <p className="status warn">{error}</p>}
       </section>
 

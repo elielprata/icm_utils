@@ -27,7 +27,7 @@ describe('loadEvento / saveEvento', () => {
     const ev = loadEvento(classes)
     expect(ev.name).toBe('')
     expect(ev.church).toBe('')
-    expect(ev.image).toBeNull()
+    expect(ev).not.toHaveProperty('image')
     expect(Object.keys(ev.turmas)).toEqual(['bercario', 'adolescentes'])
     expect(ev.turmas.bercario).toEqual({ date: '', time: '', palavra: '', louvor: '', show: false })
   })
@@ -49,7 +49,15 @@ describe('loadEvento / saveEvento', () => {
     expect(ev.turmas.adolescentes).toEqual({ date: '', time: '', palavra: '', louvor: '', show: false })
   })
 
-  it('sem espaço no aparelho (imagem grande demais), avisa em vez de quebrar', () => {
+  it('imagem salva por versões antigas é descartada (a arte agora vem do site)', () => {
+    localStorage.setItem('cias-evento:v1', JSON.stringify({ name: 'X', image: 'data:image/webp;base64,AAAA', turmas: {} }))
+    const ev = loadEvento(classes)
+    expect(ev).not.toHaveProperty('image')
+    saveEvento(ev)
+    expect(localStorage.getItem('cias-evento:v1')).not.toContain('image')
+  })
+
+  it('sem espaço no aparelho, avisa em vez de quebrar', () => {
     const original = Storage.prototype.setItem
     Storage.prototype.setItem = () => {
       throw new DOMException('cheio', 'QuotaExceededError')

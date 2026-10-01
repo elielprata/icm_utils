@@ -5,6 +5,8 @@ Site com ferramentas simples para organizar a igreja, publicado no GitHub Pages:
 - **Escala das CIAs**: professores das classes infantis em rodízio, com imagem para o WhatsApp.
 - **Escala do Trabalho de Senhoras**: Palavra, Louvor e Preparo às quartas-feiras, pelas tabelas oficiais
   (3 a 12 servas), pulando a 5ª quarta do mês.
+- **Evento das CIAs**: Evangelização, Seminário…: Palavra e Louvor das turmas numa imagem só. A arte do evento é a
+  mesma para todos e fica em `src/assets/evento-cias.webp`: para o próximo evento, substitua esse arquivo e publique.
 - **Oração Ininterrupta**: lista de 24 horas (horários de 15 minutos) com várias igrejas. Cada igreja recebe
   seu link de inscrição; os dados ficam no Firebase.
 

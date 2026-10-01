@@ -1,8 +1,8 @@
 import type { CSSProperties } from 'react'
 import type { ClassGroup } from '../types'
 import { turmaWhen, visibleTurmas, type CiasEvento } from '../lib/ciasEvento'
-import ciasBanner from '../assets/fundo-area-kids-site.webp'
-import ciasLogo from '../assets/logo-cias.webp'
+// Arte do evento atual, a mesma para todo mundo. Para o próximo evento, troque este arquivo.
+import eventArt from '../assets/evento-cias.webp'
 
 interface Props {
   evento: CiasEvento
@@ -16,8 +16,7 @@ export function EventCard({ evento, classes, exporting }: Props) {
   return (
     <div className={`event-sheet${exporting ? ' export' : ''}`}>
       <div className="ev-banner">
-        <img className="ev-banner-bg" src={evento.image ?? ciasBanner} alt="" />
-        {!evento.image && <img className="ev-logo" src={ciasLogo} alt="CIAS" />}
+        <img className="ev-banner-bg" src={eventArt} alt="" />
       </div>
       <div className="ev-head">
         {evento.name && <div className="ev-name">{evento.name}</div>}

@@ -83,8 +83,10 @@ pelo coordenador). Nomes de igrejas não são alterados.
 
 - Para Evangelização (outubro), Seminário (março) etc.: **uma tela só, sem abas**, preenchida pela igreja, e **uma
   imagem com todas as turmas**.
-- Evento: nome (começa **vazio**, só com exemplo no campo), igreja, tema e a arte (reduzida e guardada no aparelho, até ~700 KB;
-  sem arte, usa a das CIAs). Para o próximo evento, troca-se tudo e preenche de novo.
+- Evento: nome (começa **vazio**, só com exemplo no campo), igreja e tema, preenchidos no aparelho.
+- **A arte é a mesma para todo mundo e fica no site:** `src/assets/evento-cias.webp` (hoje, a da Evangelização
+  2026). Não há envio de imagem na tela. Para o próximo evento, substituir esse arquivo (o usuário manda a arte nova)
+  e publicar.
 - **Cada turma tem o seu dia e horário** (ex.: Adolescentes no sábado à tarde) e quem faz **Palavra** e **Louvor**,
   escolhidos à mão (sugestões = professoras da turma na escala dos domingos; aceita outro nome).
 - Cada turma tem o checkbox **"Mostrar na imagem"**: só as marcadas entram (evento só das Crianças → só Crianças),

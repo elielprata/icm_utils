@@ -40,18 +40,10 @@ test('preenche o evento, cada turma com o seu horário, e gera uma imagem com to
   await page.locator('#ev-church').fill('Itupiranga')
   await page.locator('#ev-tema').fill('Você sabe o que é Salvação?')
 
-  // Arte do evento
-  const art = await page.evaluate(() => {
-    const c = document.createElement('canvas')
-    c.width = 1280
-    c.height = 720
-    const x = c.getContext('2d')!
-    x.fillStyle = '#ffd34d'
-    x.fillRect(0, 0, 1280, 720)
-    return c.toDataURL('image/png')
-  })
-  await page.locator('#ev-image').setInputFiles({ name: 'arte.png', mimeType: 'image/png', buffer: Buffer.from(art.split(',')[1], 'base64') })
-  await expect(page.locator('.event-form img.event-art')).toBeVisible()
+  // A arte é a mesma para todo mundo: vem do site, não há como trocar na tela
+  await expect(page.locator('#ev-image')).toHaveCount(0)
+  await expect(page.getByText('Escolher imagem')).toHaveCount(0)
+  await expect(page.locator('.event-sheet:not(.export) .ev-banner-bg')).toHaveAttribute('src', /evento-cias/)
 
   // Todas as turmas na mesma tela, sem abas; cada uma com o seu dia e horário
   await expect(page.locator('.page-tabs')).toHaveCount(0)
@@ -97,7 +89,6 @@ test('preenche o evento, cada turma com o seu horário, e gera uma imagem com to
   await page.reload()
   await expect(page.locator('#ev-church')).toHaveValue('Itupiranga')
   await expect(turmas.nth(3).getByLabel('Horário')).toHaveValue('15:00')
-  await expect(page.locator('.event-form img.event-art')).toBeVisible()
 })
 
 test('o checkbox "Mostrar na imagem" decide quais turmas aparecem; sem nenhuma, não compartilha', async ({ page }) => {

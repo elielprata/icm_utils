@@ -14,13 +14,14 @@ export interface TurmaEvento {
   show: boolean
 }
 
-/** Evento das CIAs (Evangelização, Seminário…), preenchido pela igreja, com todas as turmas numa imagem. */
+/**
+ * Evento das CIAs (Evangelização, Seminário…), preenchido pela igreja, com as turmas numa imagem.
+ * A arte é a mesma para todo mundo e fica no site (`src/assets/evento-cias.webp`).
+ */
 export interface CiasEvento {
   name: string
   church: string
   tema: string
-  /** Arte do evento, reduzida (data URL) */
-  image: string | null
   /** Chave = id da turma na escala dos domingos */
   turmas: Record<string, TurmaEvento>
 }
@@ -63,7 +64,6 @@ export function emptyEvento(classes: Pick<ClassGroup, 'id'>[]): CiasEvento {
     name: '',
     church: '',
     tema: '',
-    image: null,
     turmas: Object.fromEntries(classes.map((c) => [c.id, emptyTurma()])),
   }
 }
@@ -89,12 +89,11 @@ export function loadEvento(classes: Pick<ClassGroup, 'id'>[]): CiasEvento {
     name: saved.name ?? empty.name,
     church: saved.church ?? empty.church,
     tema: saved.tema ?? empty.tema,
-    image: saved.image ?? empty.image,
     turmas,
   }
 }
 
-/** Salva no aparelho. Devolve `false` se não couber (ex.: imagem grande demais para o navegador). */
+/** Salva no aparelho. Devolve `false` se não couber (armazenamento do navegador cheio). */
 export function saveEvento(evento: CiasEvento): boolean {
   try {
     localStorage.setItem(KEY, JSON.stringify(evento))
