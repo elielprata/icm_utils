@@ -114,12 +114,47 @@ test.describe('coordenador', () => {
     await expect(page.locator('.link-row')).toHaveCount(2)
   })
 
+  test('Configurar é dividido em abas, cada uma com só o seu conteúdo', async ({ page }) => {
+    const db = await coordinatorDb()
+    const pid = await seedPeriod(db)
+    await page.goto(`./#/oracao/admin/${pid}`)
+    await page.getByRole('tab', { name: 'Configurar' }).click()
+
+    const config = page.locator('.config-tabs')
+    await expect(config.getByRole('tab')).toHaveText(['Período', 'Igrejas', 'Motivos', 'Coordenadores'])
+
+    // Período (aberta por padrão): título e datas, sem igrejas nem motivos
+    await expect(page.locator('#motivo')).toBeVisible()
+    await expect(page.locator('#start')).toBeVisible()
+    await expect(page.locator('#motivos')).toHaveCount(0)
+    await expect(page.getByLabel('Nome da igreja')).toHaveCount(0)
+
+    await config.getByRole('tab', { name: 'Igrejas' }).click()
+    await expect(page.getByLabel('Nome da igreja')).toHaveCount(3)
+    await expect(page.locator('#motivo')).toHaveCount(0)
+
+    // Motivos: texto e imagem juntos
+    await config.getByRole('tab', { name: 'Motivos' }).click()
+    await expect(page.locator('#motivos')).toBeVisible()
+    await expect(page.getByText('Imagem dos motivos (opcional)')).toBeVisible()
+    await expect(page.getByText('Coordenadores', { exact: true })).toHaveCount(1) // só a aba
+
+    await config.getByRole('tab', { name: 'Coordenadores' }).click()
+    await expect(page.getByPlaceholder('email@gmail.com')).toBeVisible()
+    await expect(page.locator('#motivos')).toHaveCount(0)
+  })
+
   test('edita título e motivos de um período existente', async ({ page }) => {
     const db = await coordinatorDb()
     const pid = await seedPeriod(db)
     await page.goto(`./#/oracao/admin/${pid}`)
     await page.getByRole('tab', { name: 'Configurar' }).click()
+
     await page.locator('#motivo').fill('Campanha de oração')
+    await page.getByRole('button', { name: 'Salvar alterações' }).click()
+    await expect.poll(async () => (await getDoc(doc(db, 'periods', pid))).data()?.motivo).toBe('Campanha de oração')
+
+    await page.locator('.config-tabs').getByRole('tab', { name: 'Motivos' }).click()
     await page.locator('#motivos').fill('Pelas famílias')
     // A prévia abre numa janela (não ocupa a página)
     await page.getByRole('button', { name: '👁 Ver como vai ficar' }).click()
@@ -128,8 +163,8 @@ test.describe('coordenador', () => {
     await preview.getByRole('button', { name: '✕ Fechar' }).click()
     await expect(preview).toHaveCount(0)
     await page.getByRole('button', { name: 'Salvar alterações' }).click()
-    await expect.poll(async () => (await getDoc(doc(db, 'periods', pid))).data()?.motivo).toBe('Campanha de oração')
-    expect((await getDoc(doc(db, 'periods', pid))).data()?.motivos).toBe('Pelas famílias')
+    await expect.poll(async () => (await getDoc(doc(db, 'periods', pid))).data()?.motivos).toBe('Pelas famílias')
+    expect((await getDoc(doc(db, 'periods', pid))).data()?.motivo).toBe('Campanha de oração')
   })
 
   test('corrige o nome e move alguém de horário', async ({ page }) => {
@@ -156,6 +191,7 @@ test.describe('coordenador', () => {
     const pid = await seedPeriod(db)
     await page.goto(`./#/oracao/admin/${pid}`)
     await page.getByRole('tab', { name: 'Configurar' }).click()
+    await page.locator('.config-tabs').getByRole('tab', { name: 'Motivos' }).click()
 
     // Uma "arte" grande (1600 × 2400) gerada no próprio navegador
     const dataUrl = await page.evaluate(() => {

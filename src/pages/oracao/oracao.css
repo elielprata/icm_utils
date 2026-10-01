@@ -1090,3 +1090,16 @@
     font-size: 0.85rem;
   }
 }
+
+/* Abas dentro de Configurar: mais discretas que as abas principais */
+.config-tabs .page-tabs button {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted);
+}
+
+.config-tabs .page-tabs button.on {
+  background: #fff;
+  border-color: var(--wine);
+  color: var(--wine);
+}

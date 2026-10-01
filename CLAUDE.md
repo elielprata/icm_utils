@@ -95,7 +95,8 @@ GitHub Pages (`https://elielprata.github.io/icm_utils/`). Os textos da interface
 - Imagem dos motivos: reduzida no aparelho (máx. 1080 px de largura, WebP) e guardada no **Firestore**
   (`periods/{id}/media/motivos`, até ~950 KB). Não usar Firebase Storage: exige o plano pago.
 - Telas: coordenador em abas (Horários · Links · Compartilhar · Configurar); a aba Compartilhar mostra duas opções
-  que abrem **janelas** (lista; motivos). Prévias abrem em janela, nunca empilhadas na página. Inscrição em abas
+  que abrem **janelas** (lista; motivos); Configurar tem sub-abas (Período · Igrejas · Motivos · Coordenadores),
+  cada uma com o seu "Salvar" (`PeriodForm` com `sections`). Motivos reúne o texto e a imagem. Prévias abrem em janela, nunca empilhadas na página. Inscrição em abas
   (Horários · Motivos · Lista), horários em grade por turno.
 - Exemplos e textos de ajuda devem ser genéricos (ex.: "Ministérios"), nunca dados reais de uma igreja.
 - **Sempre que `firestore.rules` mudar, lembrar o usuário de publicar** no console do Firebase

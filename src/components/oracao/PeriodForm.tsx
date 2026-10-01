@@ -5,16 +5,22 @@ import { MotivosCard } from './ShareOptions'
 
 export type PeriodDraft = Pick<Period, 'motivo' | 'motivos' | 'start' | 'end' | 'churches'>
 
+/** Partes do formulário: na criação aparecem todas; em Configurar, uma por aba. */
+export type PeriodSection = 'periodo' | 'igrejas' | 'motivos'
+const ALL_SECTIONS: PeriodSection[] = ['periodo', 'motivos', 'igrejas']
+
 interface Props {
   initial: PeriodDraft
   /** Inscritos por igreja: igreja com inscritos não pode ser removida */
   counts?: Record<string, number>
   submitLabel: string
   onSubmit: (draft: PeriodDraft) => Promise<void>
+  sections?: PeriodSection[]
 }
 
 /** Título, motivos, datas e igrejas (nome + cor) de um período. */
-export function PeriodForm({ initial, counts = {}, submitLabel, onSubmit }: Props) {
+export function PeriodForm({ initial, counts = {}, submitLabel, onSubmit, sections = ALL_SECTIONS }: Props) {
+  const show = (s: PeriodSection) => sections.includes(s)
   const [draft, setDraft] = useState(initial)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -64,97 +70,122 @@ export function PeriodForm({ initial, counts = {}, submitLabel, onSubmit }: Prop
 
   return (
     <div className="period-form">
-      <div className="grid-fields">
-        <label className="field">
-          <span>Título</span>
-          <input
-            id="motivo"
-            value={draft.motivo}
-            maxLength={120}
-            placeholder="Ex.: Ministérios"
-            onChange={(e) => setDraft({ ...draft, motivo: e.target.value })}
-          />
-        </label>
-        <label className="field">
-          <span>Início</span>
-          <input id="start" type="date" value={draft.start} onChange={(e) => setDraft({ ...draft, start: e.target.value })} />
-        </label>
-        <label className="field">
-          <span>Fim</span>
-          <input id="end" type="date" value={draft.end} onChange={(e) => setDraft({ ...draft, end: e.target.value })} />
-        </label>
-      </div>
-
-      <label className="field motivos-field">
-        <span>Motivos de oração</span>
-        <textarea
-          id="motivos"
-          rows={8}
-          maxLength={MOTIVOS_MAX}
-          value={draft.motivos ?? ''}
-          placeholder={'MOTIVOS PESSOAIS\n• Primeiro motivo\n• Segundo motivo\n\nMOTIVOS GERAIS\n• Outro motivo'}
-          onChange={(e) => setDraft({ ...draft, motivos: e.target.value })}
-        />
-      </label>
-      <p className="hint motivos-help">
-        Comece cada motivo com <b>•</b>, <b>*</b> ou <b>-</b>. Uma linha sem marcador vira <b>título em negrito</b>, e
-        uma linha em branco separa os grupos. Pode colar direto do PDF. Se os motivos vieram numa <b>imagem</b>, envie
-        em <b>Imagem dos motivos</b>, mais abaixo nesta página: com imagem, ela aparece no lugar do texto.
-      </p>
-      {hasMotivos(draft.motivos) && (
-        <button type="button" className="ghost preview-button" onClick={() => setPreview(true)}>
-          👁 Ver como vai ficar
-        </button>
-      )}
-      {preview && (
-        <Modal title="Como os motivos vão aparecer" onClose={() => setPreview(false)}>
-          <MotivosCard period={draft} />
-        </Modal>
+      {show('periodo') && (
+        <div className="grid-fields">
+          <label className="field">
+            <span>Título</span>
+            <input
+              id="motivo"
+              value={draft.motivo}
+              maxLength={120}
+              placeholder="Ex.: Ministérios"
+              onChange={(e) => setDraft({ ...draft, motivo: e.target.value })}
+            />
+          </label>
+          <label className="field">
+            <span>Início</span>
+            <input
+              id="start"
+              type="date"
+              value={draft.start}
+              onChange={(e) => setDraft({ ...draft, start: e.target.value })}
+            />
+          </label>
+          <label className="field">
+            <span>Fim</span>
+            <input
+              id="end"
+              type="date"
+              value={draft.end}
+              onChange={(e) => setDraft({ ...draft, end: e.target.value })}
+            />
+          </label>
+        </div>
       )}
 
-      <h3 className="sub">Igrejas</h3>
-      <div className="church-edit">
-        {churches.map(([code, c]) => (
-          <div key={code} className="church-edit-row">
-            <input
-              type="color"
-              aria-label="Cor da igreja"
-              value={c.color}
-              onChange={(e) => setChurch(code, { color: e.target.value })}
+      {show('motivos') && (
+        <>
+          <label className="field motivos-field">
+            <span>Motivos de oração</span>
+            <textarea
+              id="motivos"
+              rows={8}
+              maxLength={MOTIVOS_MAX}
+              value={draft.motivos ?? ''}
+              placeholder={'MOTIVOS PESSOAIS\n• Primeiro motivo\n• Segundo motivo\n\nMOTIVOS GERAIS\n• Outro motivo'}
+              onChange={(e) => setDraft({ ...draft, motivos: e.target.value })}
             />
-            <input
-              className="church-name"
-              aria-label="Nome da igreja"
-              placeholder="Nome da igreja"
-              value={c.name}
-              maxLength={40}
-              onChange={(e) => setChurch(code, { name: e.target.value })}
-            />
-            <div className="swatches">
-              {CHURCH_COLORS.map((color) => (
-                <button
-                  key={color}
-                  type="button"
-                  className={color === c.color ? 'on' : ''}
-                  style={{ background: color }}
-                  aria-label={`Usar a cor ${color}`}
-                  onClick={() => setChurch(code, { color })}
+          </label>
+          <p className="hint motivos-help">
+            Comece cada motivo com <b>•</b>, <b>*</b> ou <b>-</b>. Uma linha sem marcador vira <b>título em negrito</b>,
+            e uma linha em branco separa os grupos. Pode colar direto do PDF. Se os motivos vieram numa <b>imagem</b>,
+            envie em <b>Imagem dos motivos</b>: com imagem, ela aparece no lugar do texto.
+          </p>
+          {hasMotivos(draft.motivos) && (
+            <button type="button" className="ghost preview-button" onClick={() => setPreview(true)}>
+              👁 Ver como vai ficar
+            </button>
+          )}
+          {preview && (
+            <Modal title="Como os motivos vão aparecer" onClose={() => setPreview(false)}>
+              <MotivosCard period={draft} />
+            </Modal>
+          )}
+        </>
+      )}
+
+      {show('igrejas') && (
+        <>
+          {sections.length > 1 && <h3 className="sub">Igrejas</h3>}
+          <div className="church-edit">
+            {churches.map(([code, c]) => (
+              <div key={code} className="church-edit-row">
+                <input
+                  type="color"
+                  aria-label="Cor da igreja"
+                  value={c.color}
+                  onChange={(e) => setChurch(code, { color: e.target.value })}
                 />
-              ))}
-            </div>
-            {counts[code] ? (
-              <span className="church-count">{counts[code]} inscritos</span>
-            ) : (
-              <button type="button" className="remove" onClick={() => removeChurch(code)} aria-label="Remover igreja">
-                ✕
-              </button>
-            )}
+                <input
+                  className="church-name"
+                  aria-label="Nome da igreja"
+                  placeholder="Nome da igreja"
+                  value={c.name}
+                  maxLength={40}
+                  onChange={(e) => setChurch(code, { name: e.target.value })}
+                />
+                <div className="swatches">
+                  {CHURCH_COLORS.map((color) => (
+                    <button
+                      key={color}
+                      type="button"
+                      className={color === c.color ? 'on' : ''}
+                      style={{ background: color }}
+                      aria-label={`Usar a cor ${color}`}
+                      onClick={() => setChurch(code, { color })}
+                    />
+                  ))}
+                </div>
+                {counts[code] ? (
+                  <span className="church-count">{counts[code]} inscritos</span>
+                ) : (
+                  <button
+                    type="button"
+                    className="remove"
+                    onClick={() => removeChurch(code)}
+                    aria-label="Remover igreja"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+            ))}
+            <button type="button" className="add-church" onClick={addChurch}>
+              + Adicionar igreja
+            </button>
           </div>
-        ))}
-        <button type="button" className="add-church" onClick={addChurch}>
-          + Adicionar igreja
-        </button>
-      </div>
+        </>
+      )}
 
       {error && <p className="status warn">{error}</p>}
       <button className="primary save" disabled={saving} onClick={submit}>

@@ -3,7 +3,7 @@ import type { User } from 'firebase/auth'
 import { PageHeader } from '../../components/PageHeader'
 import { ShareList, ShareMotivos } from '../../components/oracao/ShareOptions'
 import { MotivosImageField, useMotivosImage } from '../../components/oracao/MotivosImage'
-import { PeriodForm } from '../../components/oracao/PeriodForm'
+import { PeriodForm, type PeriodSection } from '../../components/oracao/PeriodForm'
 import { PeopleList } from '../../components/oracao/PeopleList'
 import { Modal, PageTabs, Sheet } from '../../components/oracao/Sheet'
 import { ChurchLegend, firstShiftWhere, ShiftTabs, SlotGrid } from '../../components/oracao/SlotGrid'
@@ -77,21 +77,65 @@ function Admin({ periodId, user }: { periodId: string; user: User }) {
       {tab === 'links' && <ChurchLinks period={period} counts={counts} />}
       {tab === 'imagem' && <ShareTab period={period} entries={entries} image={image} />}
       {tab === 'configurar' && (
+        <ConfigTab period={period} counts={counts} image={image} me={user.email!.toLowerCase()} />
+      )}
+    </>
+  )
+}
+
+type ConfigSection = 'periodo' | 'igrejas' | 'motivos' | 'coordenadores'
+
+/** Configurar em abas: cada parte separada, com o seu próprio "Salvar". */
+function ConfigTab({
+  period,
+  counts,
+  image,
+  me,
+}: {
+  period: Period
+  counts: Record<string, number>
+  image?: string | null
+  me: string
+}) {
+  const [section, setSection] = useState<ConfigSection>('periodo')
+
+  const form = (sections: PeriodSection[], title: string) => (
+    <section className="panel">
+      <h2>{title}</h2>
+      <PeriodForm
+        key={JSON.stringify([section, period.motivo, period.motivos, period.start, period.end, period.churches])}
+        initial={period}
+        counts={counts}
+        sections={sections}
+        submitLabel="Salvar alterações"
+        onSubmit={(draft) => updatePeriod(period.id, draft)}
+      />
+    </section>
+  )
+
+  return (
+    <>
+      <div className="config-tabs">
+        <PageTabs
+          tabs={[
+            { id: 'periodo', label: 'Período' },
+            { id: 'igrejas', label: 'Igrejas' },
+            { id: 'motivos', label: 'Motivos' },
+            { id: 'coordenadores', label: 'Coordenadores' },
+          ]}
+          value={section}
+          onChange={setSection}
+        />
+      </div>
+      {section === 'periodo' && form(['periodo'], 'Título e datas')}
+      {section === 'igrejas' && form(['igrejas'], 'Igrejas e cores')}
+      {section === 'motivos' && (
         <>
-          <section className="panel">
-            <h2>Período e igrejas</h2>
-            <PeriodForm
-              key={JSON.stringify([period.motivo, period.motivos, period.start, period.end, period.churches])}
-              initial={period}
-              counts={counts}
-              submitLabel="Salvar alterações"
-              onSubmit={(draft) => updatePeriod(period.id, draft)}
-            />
-          </section>
+          {form(['motivos'], 'Motivos em texto')}
           <MotivosImageField periodId={period.id} image={image} />
-          <Coordinators period={period} me={user.email!.toLowerCase()} />
         </>
       )}
+      {section === 'coordenadores' && <Coordinators period={period} me={me} />}
     </>
   )
 }
