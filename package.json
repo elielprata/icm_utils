@@ -8,19 +8,30 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "dev:emulador": "vite --mode emulador",
-    "emuladores": "npx firebase-tools emulators:start --project demo-icm-utils"
+    "emuladores": "firebase emulators:start --project demo-icm-utils",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:rules": "firebase emulators:exec --only firestore --project demo-icm-utils \"vitest run --config vitest.rules.config.ts\"",
+    "test:e2e": "firebase emulators:exec --project demo-icm-utils \"playwright test\"",
+    "test:all": "npm test && npm run test:rules && npm run test:e2e"
   },
   "dependencies": {
     "firebase": "^12.19.0",
     "html-to-image": "^1.11.13",
+    "jspdf": "^4.2.1",
     "react": "^19.3.0",
     "react-dom": "^19.3.0"
   },
   "devDependencies": {
+    "@firebase/rules-unit-testing": "^5.0.2",
+    "@playwright/test": "^1.63.0",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.1.1",
+    "firebase-tools": "^13.35.1",
+    "jsdom": "^29.1.1",
     "typescript": "^7.0.2",
-    "vite": "^8.3.1"
+    "vite": "^8.3.1",
+    "vitest": "^5.0.3"
   }
 }

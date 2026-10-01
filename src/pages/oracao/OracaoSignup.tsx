@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { FirebaseError } from 'firebase/app'
 import { Shareable } from '../../components/Shareable'
+import { PdfActions } from '../../components/oracao/PdfActions'
 import { OracaoSheet } from '../../components/oracao/OracaoSheet'
 import { MotivosList } from '../../components/oracao/MotivosList'
 import { PeopleList } from '../../components/oracao/PeopleList'
@@ -29,7 +30,6 @@ import {
 import { firebaseReady } from '../../lib/firebase'
 import { usePeriodData } from './usePeriodData'
 
-const NAME_KEY = 'oracao:nome'
 const mineKey = (periodId: string) => `oracao:minhas:${periodId}`
 
 function readStorage<T>(key: string, fallback: T): T {
@@ -99,6 +99,7 @@ function Signup({ periodId, churchCode }: { periodId: string; churchCode: string
       {tab === 'motivos' && <MotivosList text={period.motivos} className="motivos-tab" />}
       {tab === 'lista' && (
         <div className="cards">
+          <PdfActions period={period} entries={entries} />
           <Shareable
             fileName="oracao-ininterrupta.png"
             version={JSON.stringify([period, entries])}
@@ -111,7 +112,7 @@ function Signup({ periodId, churchCode }: { periodId: string; churchCode: string
 }
 
 function Horarios({ period, entries, churchCode }: { period: Period; entries: Entry[]; churchCode: string }) {
-  const [name, setName] = useState(() => readStorage(NAME_KEY, ''))
+  const [name, setName] = useState('')
   const [mine, setMine] = useState<MyEntry[]>(() => readMine(period.id))
   const [shift, setShift] = useState<number | null>(null)
   const [sheet, setSheet] = useState<SheetState>(null)
@@ -140,7 +141,8 @@ function Horarios({ period, entries, churchCode }: { period: Period; entries: En
   }
 
   const book = async (slot: number) => {
-    const trimmed = name.trim()
+    // Na troca o campo de nome não aparece: mantém o nome da inscrição atual.
+    const trimmed = (moving && movingEntry ? movingEntry.name : name).trim()
     if (!trimmed) return setMessage({ ok: false, text: 'Digite seu nome para confirmar.' })
     setBusy(true)
     setMessage(null)
@@ -156,7 +158,7 @@ function Horarios({ period, entries, churchCode }: { period: Period; entries: En
         saveMine([...mine, created])
         setMessage({ ok: true, text: `${trimmed}, você ficou com ${slotLabel(slot)}. Deus abençoe!` })
       }
-      writeStorage(NAME_KEY, trimmed)
+      setName('')
       setSheet(null)
       window.scrollTo({ top: 0, behavior: 'smooth' })
     } catch (err) {

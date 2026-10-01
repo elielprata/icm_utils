@@ -860,3 +860,15 @@
 .oracao .back:hover {
   border-color: var(--wine);
 }
+
+/* PDF da lista completa */
+.pdf-actions {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 16px;
+}
+
+.pdf-actions .hint {
+  margin: 0;
+}

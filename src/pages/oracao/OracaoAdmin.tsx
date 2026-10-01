@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { User } from 'firebase/auth'
 import { PageHeader } from '../../components/PageHeader'
 import { Shareable } from '../../components/Shareable'
+import { PdfActions } from '../../components/oracao/PdfActions'
 import { OracaoSheet } from '../../components/oracao/OracaoSheet'
 import { PeriodForm } from '../../components/oracao/PeriodForm'
 import { PeopleList } from '../../components/oracao/PeopleList'
@@ -64,7 +65,7 @@ function Admin({ periodId, user }: { periodId: string; user: User }) {
         tabs={[
           { id: 'horarios', label: 'Horários' },
           { id: 'links', label: 'Links' },
-          { id: 'imagem', label: 'Imagem' },
+          { id: 'imagem', label: 'Compartilhar' },
           { id: 'configurar', label: 'Configurar' },
         ]}
         value={tab}
@@ -75,6 +76,7 @@ function Admin({ periodId, user }: { periodId: string; user: User }) {
       {tab === 'links' && <ChurchLinks period={period} counts={counts} />}
       {tab === 'imagem' && (
         <div className="cards">
+          <PdfActions period={period} entries={entries} />
           <Shareable
             fileName="oracao-ininterrupta.png"
             version={JSON.stringify([period, entries])}

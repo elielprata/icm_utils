@@ -5,3 +5,7 @@ dist
 firebase-debug.log
 firestore-debug.log
 .firebase/
+
+# Testes
+test-results/
+playwright-report/

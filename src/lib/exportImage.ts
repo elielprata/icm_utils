@@ -49,6 +49,23 @@ export async function shareImage(blob: Blob, fileName: string): Promise<ShareRes
   }
 }
 
+/** Compartilha um arquivo qualquer (ex.: PDF); sem suporte ao compartilhamento, baixa o arquivo. */
+export async function shareFile(blob: Blob, fileName: string): Promise<ShareResult> {
+  const file = new File([blob], fileName, { type: blob.type })
+  if (navigator.canShare?.({ files: [file] })) {
+    try {
+      await navigator.share({ files: [file] })
+      return 'shared'
+    } catch (err) {
+      const name = (err as DOMException).name
+      if (name === 'AbortError') return 'cancelled'
+      if (name === 'NotAllowedError') return 'retry'
+    }
+  }
+  downloadBlob(blob, fileName)
+  return 'downloaded'
+}
+
 export function downloadBlob(blob: Blob, fileName: string) {
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
