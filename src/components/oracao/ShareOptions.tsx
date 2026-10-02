@@ -1,25 +1,36 @@
-import { Shareable } from '../Shareable'
+import { Entry, formatRange, hasMotivos, Period } from '../../lib/oracao'
 import { buildOracaoPdf } from '../../lib/oracaoPdf'
-import { formatRange, hasMotivos, type Entry, type Period } from '../../lib/oracao'
+import { Shareable } from '../Shareable'
 import { MotivosImageShare } from './MotivosImage'
 import { MotivosList } from './MotivosList'
 import { OracaoSheet } from './OracaoSheet'
 import { PdfActions } from './PdfActions'
 
 /** Lista de horários: PDF (mais nítido) e imagem. */
-export function ShareList({ period, entries }: { period: Period; entries: Entry[] }) {
+export function ShareList({
+  period,
+  entries,
+}: {
+  period: Period
+  entries: Entry[]
+}) {
   return (
     <div className="cards">
       <PdfActions
         what="da lista"
         fileName="oracao-ininterrupta.pdf"
         build={(jsPDF) => buildOracaoPdf(jsPDF, period, entries)}
-        hint="O PDF fica mais nítido que a imagem: o WhatsApp envia como documento, sem reduzir a qualidade."
       />
       <Shareable
         fileName="oracao-ininterrupta.png"
         version={JSON.stringify([period, entries])}
-        render={(exporting) => <OracaoSheet period={period} entries={entries} exporting={exporting} />}
+        render={(exporting) => (
+          <OracaoSheet
+            period={period}
+            entries={entries}
+            exporting={exporting}
+          />
+        )}
       />
     </div>
   )
@@ -47,7 +58,13 @@ export function MotivosCard({
  * Motivos de oração, compartilhados à parte da lista e só como imagem: a arte enviada pelo coordenador
  * substitui o texto; sem arte, os motivos em texto viram imagem.
  */
-export function ShareMotivos({ period, image }: { period: Period; image?: string | null }) {
+export function ShareMotivos({
+  period,
+  image,
+}: {
+  period: Period
+  image?: string | null
+}) {
   if (image) {
     return (
       <div className="cards">
@@ -60,8 +77,15 @@ export function ShareMotivos({ period, image }: { period: Period; image?: string
     <div className="cards">
       <Shareable
         fileName="motivos-de-oracao.png"
-        version={JSON.stringify([period.motivo, period.motivos, period.start, period.end])}
-        render={(exporting) => <MotivosCard period={period} exporting={exporting} />}
+        version={JSON.stringify([
+          period.motivo,
+          period.motivos,
+          period.start,
+          period.end,
+        ])}
+        render={(exporting) => (
+          <MotivosCard period={period} exporting={exporting} />
+        )}
       />
     </div>
   )
