@@ -30,6 +30,12 @@ const TOOLS = [
     description: 'Lista de 24 horas com várias igrejas: cada igreja recebe seu link de inscrição.',
     art: '24h',
   },
+  {
+    href: '#/calendario',
+    title: 'Calendário de Eventos',
+    description: 'Datas marcadas direto no mês, numa imagem para o WhatsApp ou num link público.',
+    art: '📅',
+  },
 ]
 
 export function Home() {

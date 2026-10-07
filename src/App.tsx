@@ -4,8 +4,9 @@ import { CiasPage } from './pages/CiasPage'
 import { CiasEventoPage } from './pages/CiasEventoPage'
 import { SenhorasPage } from './pages/SenhorasPage'
 
-// Carrega a Oração (e o Firebase) só quando alguém abre essa parte.
+// Carrega a Oração e o Calendário (e o Firebase) só quando alguém abre essa parte.
 const OracaoRoutes = lazy(() => import('./pages/oracao'))
+const CalendarioRoutes = lazy(() => import('./pages/calendario'))
 
 // Rotas por hash (#/cias), que funcionam no GitHub Pages sem configuração extra.
 const PAGES: Record<string, ComponentType> = {
@@ -31,6 +32,13 @@ export default function App() {
     return (
       <Suspense fallback={<p className="hint app">Carregando…</p>}>
         <OracaoRoutes path={rest} />
+      </Suspense>
+    )
+  }
+  if (section === 'calendario') {
+    return (
+      <Suspense fallback={<p className="hint app">Carregando…</p>}>
+        <CalendarioRoutes path={rest} />
       </Suspense>
     )
   }

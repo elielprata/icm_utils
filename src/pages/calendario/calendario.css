@@ -1,0 +1,498 @@
+/* ---------- Calendário de Eventos (carregado só nesta parte do site) ---------- */
+.calendario {
+  --cg-accent: #bb1626;
+  --cg-accent-dark: #9d1724;
+  --cg-bg: #fef2f3;
+  --cg-band: #ffe1e4;
+  --cg-border: #f6d9dc;
+  --cg-muted: #9c7f87;
+}
+
+.calendario .primary {
+  background: var(--cg-accent);
+}
+
+.calendario .primary:hover {
+  background: var(--cg-accent-dark);
+}
+
+.calendario .page-tabs button.on {
+  background: var(--cg-accent);
+}
+
+.cg-intro {
+  margin: 10px 0 14px;
+  font-size: 1.02rem;
+  max-width: 65ch;
+}
+
+.cg-signed-in {
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin: 8px 0 0;
+}
+
+.panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.panel-head h2 {
+  margin: 0;
+}
+
+.cg-title-row {
+  font-weight: 700;
+  margin: 4px 0 10px;
+}
+
+/* Lista "meus calendários" */
+.cg-calendar-list {
+  display: grid;
+  gap: 8px;
+}
+
+.cg-calendar-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border: 1px solid var(--cg-border);
+  border-radius: 12px;
+  padding: 10px 14px;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.cg-calendar-item:hover {
+  border-color: var(--cg-accent);
+}
+
+.cg-calendar-item span {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+/* Seletor de mês */
+.cg-month-field {
+  max-width: 220px;
+}
+
+/* Grade do mês (compartilhada entre a aba Eventos, o link público e o cartão exportável) */
+.cg-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 3px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--cg-muted);
+  text-align: center;
+  margin: 10px 0 4px;
+}
+
+.cg-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 3px;
+}
+
+.cg-cell {
+  min-height: 48px;
+  border-radius: 9px;
+  background: #fff;
+  border: 1px solid var(--cg-border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 5px 2px;
+  box-sizing: border-box;
+}
+
+.cg-cell.empty {
+  background: transparent;
+  border-color: transparent;
+}
+
+.cg-cell-btn {
+  width: 100%;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.cg-grid-interactive .cg-cell-btn:hover {
+  border-color: var(--cg-accent);
+}
+
+.cg-cell.today {
+  border: 2px solid var(--cg-accent);
+}
+
+.cg-cell.past .cg-day {
+  color: var(--cg-muted);
+}
+
+.cg-cell.selected {
+  background: var(--cg-band);
+}
+
+.cg-day {
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.cg-dots {
+  display: flex;
+  gap: 2px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 4px;
+}
+
+.cg-dots i {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+/* Evento ainda não confirmado: mesma cor do tipo, mas esmaecida (só quem administra vê) */
+.pending {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  opacity: 0.4;
+  vertical-align: middle;
+}
+
+/* Legenda dos tipos */
+.cg-legend {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin: 12px 0;
+}
+
+.cg-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.8rem;
+  background: #fff;
+  border: 1px solid var(--cg-border);
+  border-radius: 999px;
+  padding: 4px 10px;
+}
+
+.cg-legend-item i {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
+
+/* Lista por data */
+.cg-date-card {
+  background: #fff;
+  border: 1px solid var(--cg-border);
+  border-radius: 12px;
+  padding: 10px 12px;
+  margin-top: 10px;
+}
+
+.cg-date-label {
+  font-size: 0.8rem;
+  font-weight: 800;
+  margin-bottom: 6px;
+  border-bottom: 1px solid var(--cg-band);
+  padding-bottom: 5px;
+}
+
+.cg-event-row {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 0.85rem;
+  margin-top: 4px;
+}
+
+.cg-event-row i {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.cg-note {
+  color: var(--cg-muted);
+}
+
+/* Eventos do dia, dentro do Sheet */
+.cg-sheet-events {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cg-sheet-event-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border-left: 4px solid var(--cg-item-accent, #999);
+  padding: 6px 10px;
+  background: var(--cg-bg);
+  border-radius: 8px;
+  font-size: 0.85rem;
+}
+
+.pl-actions {
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.pl-actions .ghost {
+  padding: 4px 9px;
+  font-size: 0.8rem;
+}
+
+/* Tipos: cor + nome editável (mesmo formato das igrejas da Oração) */
+.church-edit {
+  display: grid;
+  gap: 8px;
+}
+
+.church-edit-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--cg-border);
+  border-radius: 12px;
+  padding: 8px 10px;
+}
+
+.church-edit-row input[type='color'] {
+  width: 36px;
+  height: 32px;
+  padding: 0;
+  border: none;
+  background: none;
+}
+
+.church-name {
+  flex: 1;
+  min-width: 120px;
+  border: 1px solid var(--border);
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-weight: 700;
+}
+
+.swatches {
+  display: flex;
+  gap: 4px;
+}
+
+.swatches button {
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  border: 2px solid transparent;
+}
+
+.swatches button.on {
+  border-color: #fff;
+  box-shadow: 0 0 0 2px var(--text);
+}
+
+.church-edit-row .remove {
+  border: none;
+  background: #f1eee8;
+  border-radius: 6px;
+  width: 28px;
+  height: 28px;
+  color: #c0392b;
+}
+
+.church-count {
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.add-church {
+  justify-self: start;
+  border: none;
+  background: none;
+  color: var(--cg-accent);
+  font-weight: 700;
+  margin-top: 4px;
+}
+
+/* Secretários */
+.admins {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 10px;
+  display: grid;
+  gap: 6px;
+}
+
+.admins li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+}
+
+/* Link público */
+.link-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  border: 1px solid var(--cg-border);
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+
+.cg-link-text {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+/* Compartilhar: seletor de mês + 1/2 meses */
+.cg-share-controls {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.cg-count-tabs {
+  margin: 0;
+}
+
+/* Cartão exportável */
+.cg-sheet {
+  width: 100%;
+  max-width: 760px;
+  margin: 0 auto;
+  background: var(--cg-bg);
+  border-radius: 22px;
+  overflow: hidden;
+  padding: 28px 32px 32px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
+}
+
+.cg-sheet.export {
+  width: 760px;
+  max-width: none;
+  margin: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.cg-head {
+  text-align: center;
+  margin-bottom: 18px;
+}
+
+.cg-head-title {
+  font-size: 1.7rem;
+  font-weight: 800;
+}
+
+.cg-head-sub {
+  color: var(--cg-muted);
+  font-size: 0.9rem;
+  margin-top: 2px;
+}
+
+.cg-months {
+  display: grid;
+  grid-template-columns: repeat(var(--cg-cols, 1), 1fr);
+  gap: 24px;
+}
+
+.cg-month-label {
+  background: var(--cg-accent);
+  color: #fff;
+  text-align: center;
+  border-radius: 8px;
+  padding: 7px;
+  font-weight: 800;
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.cg-bydate {
+  margin-top: 14px;
+}
+
+/* Link público: cabeçalho, navegação de mês */
+.cg-public-head {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.cg-public-label {
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: var(--cg-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.cg-public-head h1 {
+  margin: 2px 0 0;
+  font-size: 1.3rem;
+}
+
+.cg-month-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--cg-band);
+  border-radius: 12px;
+  padding: 6px 8px;
+  margin-bottom: 12px;
+}
+
+.cg-month-nav span {
+  font-weight: 800;
+}
+
+.cg-month-nav button {
+  border: none;
+  background: #fff;
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--cg-accent);
+  cursor: pointer;
+}
+
+.cg-month-nav button:disabled {
+  color: var(--cg-muted);
+  cursor: default;
+}
+
+.cg-public-note {
+  text-align: center;
+  margin-top: 16px;
+}

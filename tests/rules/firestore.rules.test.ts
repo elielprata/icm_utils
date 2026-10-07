@@ -262,3 +262,107 @@ describe('coordenador', () => {
     await assertSucceeds(deleteDoc(ref(coord(), 'entries', '7_0')))
   })
 })
+
+describe('calendários', () => {
+  const cal = (extra: Record<string, unknown> = {}) => ({
+    name: 'Teste',
+    types: { t1: { name: 'Confirmado', color: '#111111', order: 0 } },
+    admins: [COORD],
+    createdAt: serverTimestamp(),
+    ...extra,
+  })
+  const calEventRef = (db: Firestore, id: string) => doc(db, 'calendars', 'c1', 'events', id)
+  const evt = (extra: Record<string, unknown> = {}) => ({
+    date: '2026-10-10',
+    time: '08:00',
+    title: 'Evento',
+    typeId: 't1',
+    createdAt: serverTimestamp(),
+    ...extra,
+  })
+
+  beforeEach(() => seed((db) => setDoc(doc(db, 'calendars', 'c1'), cal())))
+
+  it('secretário cria calendário com o próprio e-mail', async () => {
+    await assertSucceeds(setDoc(doc(coord(), 'calendars', 'novo'), cal()))
+  })
+
+  it('anônimo não cria calendário', async () => {
+    await assertFails(setDoc(doc(anon(), 'calendars', 'novo'), cal()))
+  })
+
+  it('não cria calendário em que não é secretário', async () => {
+    await assertFails(setDoc(doc(intruder(), 'calendars', 'novo'), cal()))
+  })
+
+  it('qualquer um lê o calendário pelo link público', async () => {
+    await assertSucceeds(getDoc(doc(anon(), 'calendars', 'c1')))
+  })
+
+  it('só o secretário lista os próprios calendários', async () => {
+    await assertSucceeds(getDocs(query(collection(coord(), 'calendars'), where('admins', 'array-contains', COORD))))
+    await assertFails(getDocs(collection(anon(), 'calendars')))
+  })
+
+  it('secretário edita nome e tipos', async () => {
+    await assertSucceeds(updateDoc(doc(coord(), 'calendars', 'c1'), { name: 'Novo nome' }))
+  })
+
+  it('outra pessoa não edita o calendário', async () => {
+    await assertFails(updateDoc(doc(intruder(), 'calendars', 'c1'), { name: 'hack' }))
+  })
+
+  it('recusa campos desconhecidos e limites de tamanho', async () => {
+    await assertFails(updateDoc(doc(coord(), 'calendars', 'c1'), { id: 'c1' }))
+    await assertFails(updateDoc(doc(coord(), 'calendars', 'c1'), { name: 'x'.repeat(121) }))
+    await assertFails(
+      updateDoc(
+        doc(coord(), 'calendars', 'c1'),
+        { admins: Array.from({ length: 21 }, (_, i) => `a${i}@x.com`) },
+      ),
+    )
+  })
+
+  describe('eventos', () => {
+    it('secretário cria evento válido', async () => {
+      await assertSucceeds(setDoc(calEventRef(coord(), 'e1'), evt()))
+    })
+
+    it('qualquer um lê os eventos pelo link público', async () => {
+      await seed((db) => setDoc(calEventRef(db, 'e1'), evt()))
+      await assertSucceeds(getDoc(calEventRef(anon(), 'e1')))
+    })
+
+    it('evento não confirmado só é lido por quem administra', async () => {
+      await seed((db) => setDoc(calEventRef(db, 'e1'), evt({ confirmed: false })))
+      await assertFails(getDoc(calEventRef(anon(), 'e1')))
+      await assertFails(getDoc(calEventRef(intruder(), 'e1')))
+      await assertSucceeds(getDoc(calEventRef(coord(), 'e1')))
+    })
+
+    it('aceita confirmed como booleano; recusa outro tipo', async () => {
+      await assertSucceeds(setDoc(calEventRef(coord(), 'e6'), evt({ confirmed: false })))
+      await assertFails(setDoc(calEventRef(coord(), 'e7'), evt({ confirmed: 'nao' })))
+    })
+
+    it('quem não é secretário não cria evento', async () => {
+      await assertFails(setDoc(calEventRef(anon(), 'e1'), evt()))
+      await assertFails(setDoc(calEventRef(intruder(), 'e1'), evt()))
+    })
+
+    it('recusa tipo inexistente, data e hora mal formatadas e título grande demais', async () => {
+      await assertFails(setDoc(calEventRef(coord(), 'e2'), evt({ typeId: 'zzz' })))
+      await assertFails(setDoc(calEventRef(coord(), 'e3'), evt({ date: '10/10/2026' })))
+      await assertFails(setDoc(calEventRef(coord(), 'e4'), evt({ time: '8:00' })))
+      await assertFails(setDoc(calEventRef(coord(), 'e5'), evt({ title: 'x'.repeat(81) })))
+    })
+
+    it('secretário edita e apaga evento; outra pessoa não', async () => {
+      await seed((db) => setDoc(calEventRef(db, 'e1'), evt()))
+      await assertSucceeds(updateDoc(calEventRef(coord(), 'e1'), { title: 'Novo título' }))
+      await assertFails(updateDoc(calEventRef(intruder(), 'e1'), { title: 'hack' }))
+      await assertFails(deleteDoc(calEventRef(intruder(), 'e1')))
+      await assertSucceeds(deleteDoc(calEventRef(coord(), 'e1')))
+    })
+  })
+})

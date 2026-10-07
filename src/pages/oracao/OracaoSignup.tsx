@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useMotivosImage } from '../../components/oracao/MotivosImage'
 import { PeopleList } from '../../components/oracao/PeopleList'
 import { ShareList, ShareMotivos } from '../../components/oracao/ShareOptions'
-import { Sheet } from '../../components/oracao/Sheet'
+import { Sheet } from '../../components/Sheet'
 import {
   ChurchLegend,
   firstShiftWhere,

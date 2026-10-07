@@ -26,6 +26,13 @@ service cloud.firestore {
         && p.admins is list && p.admins.size() > 0 && p.admins.size() <= 20;
     }
 
+    function validCalendar(c) {
+      return c.keys().hasOnly(['name', 'types', 'admins', 'createdAt'])
+        && c.name is string && c.name.size() <= 120
+        && c.types is map && c.types.size() <= 12
+        && c.admins is list && c.admins.size() > 0 && c.admins.size() <= 20;
+    }
+
     match /periods/{periodId} {
       function entryDoc(id) {
         return /databases/$(database)/documents/periods/$(periodId)/entries/$(id);
@@ -133,6 +140,49 @@ service cloud.firestore {
         allow read: if false;
         allow create, update: if request.resource.data.keys().hasOnly(['key'])
           && request.resource.data.key == get(secretDoc(entryId)).data.key;
+      }
+    }
+
+    // Calendário de Eventos.
+    // - Qualquer pessoa com o link vê o calendário e os eventos (visualização pública, sem edição).
+    // - Só secretários (e-mails em `admins`, login Google) criam, editam e apagam eventos e tipos.
+    // - Um secretário pode administrar mais de um calendário.
+    match /calendars/{calendarId} {
+      function calendar() {
+        return get(/databases/$(database)/documents/calendars/$(calendarId)).data;
+      }
+
+      function isCalendarAdmin() {
+        return signedIn() && myEmail() in calendar().admins;
+      }
+
+      allow get: if true;
+      // A busca "meus calendários" filtra por admins array-contains o próprio e-mail.
+      allow list: if signedIn() && myEmail() in resource.data.admins;
+      allow create: if signedIn()
+        && validCalendar(request.resource.data)
+        && myEmail() in request.resource.data.admins;
+      allow update: if signedIn()
+        && myEmail() in resource.data.admins
+        && validCalendar(request.resource.data);
+      allow delete: if signedIn() && myEmail() in resource.data.admins;
+
+      match /events/{eventId} {
+        function validEvent(e) {
+          return e.keys().hasOnly(['date', 'time', 'title', 'note', 'typeId', 'confirmed', 'createdAt'])
+            && (!('confirmed' in e) || e.confirmed is bool)
+            && e.date is string && e.date.matches('[0-9]{4}-[0-9]{2}-[0-9]{2}')
+            && (!('time' in e) || (e.time is string && e.time.matches('[0-9]{2}:[0-9]{2}')))
+            && e.title is string && e.title.size() > 0 && e.title.size() <= 80
+            && (!('note' in e) || (e.note is string && e.note.size() <= 80))
+            && e.typeId is string && e.typeId in calendar().types;
+        }
+
+        // Evento marcado como não confirmado (`confirmed: false`): só quem administra o calendário lê.
+        allow read: if resource.data.get('confirmed', true) != false || isCalendarAdmin();
+        allow create: if isCalendarAdmin() && validEvent(request.resource.data);
+        allow update: if isCalendarAdmin() && validEvent(request.resource.data);
+        allow delete: if isCalendarAdmin();
       }
     }
   }

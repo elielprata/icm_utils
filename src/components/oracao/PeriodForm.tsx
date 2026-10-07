@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { CHURCH_COLORS, hasMotivos, MOTIVOS_MAX, randomCode, type Church, type Period } from '../../lib/oracao'
-import { Modal } from './Sheet'
+import { Modal } from '../Sheet'
 import { MotivosCard } from './ShareOptions'
 
 export type PeriodDraft = Pick<Period, 'motivo' | 'motivos' | 'start' | 'end' | 'churches'>
