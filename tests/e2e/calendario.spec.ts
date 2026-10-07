@@ -54,6 +54,15 @@ test.describe('secretário', () => {
     await page.keyboard.press('Escape')
     await expect(page.locator(`button[aria-label="${today}"] .cg-dots i`)).toHaveCount(1)
 
+    // Setas ‹ › trocam de mês sem precisar abrir o seletor; ida e volta mantém o evento visível
+    const monthValue = () => page.locator('.cg-month-field input[type="month"]').inputValue()
+    const before = await monthValue()
+    await page.getByRole('button', { name: 'Mês seguinte' }).click()
+    await expect.poll(monthValue).not.toBe(before)
+    await page.getByRole('button', { name: 'Mês anterior' }).click()
+    await expect.poll(monthValue).toBe(before)
+    await expect(page.locator(`button[aria-label="${today}"] .cg-dots i`)).toHaveCount(1)
+
     // Compartilhar: a bolinha, a legenda e os detalhes do evento aparecem na imagem
     await page.getByRole('tab', { name: 'Compartilhar' }).click()
     const card = page.locator('.cg-sheet:not(.export)')

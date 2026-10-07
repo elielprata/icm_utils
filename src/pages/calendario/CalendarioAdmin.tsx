@@ -7,6 +7,7 @@ import { Shareable } from '../../components/Shareable'
 import { MonthGridCard } from '../../components/calendario/MonthGridCard'
 import {
   addEvent,
+  addMonths,
   buildMonthGrid,
   currentMonthKey,
   dateLabel,
@@ -127,10 +128,18 @@ function EventsTab({ calendar, events }: { calendar: Calendar; events: CalendarE
 
   return (
     <section className="panel">
-      <label className="field cg-month-field">
-        <span>Mês</span>
-        <input type="month" value={month} onChange={(e) => e.target.value && setMonth(e.target.value)} />
-      </label>
+      <div className="cg-month-nav">
+        <button type="button" onClick={() => setMonth((m) => addMonths(m, -1))} aria-label="Mês anterior">
+          ‹
+        </button>
+        <label className="field cg-month-field">
+          <span>Mês</span>
+          <input type="month" value={month} onChange={(e) => e.target.value && setMonth(e.target.value)} />
+        </label>
+        <button type="button" onClick={() => setMonth((m) => addMonths(m, 1))} aria-label="Mês seguinte">
+          ›
+        </button>
+      </div>
 
       {typeIds.length === 0 && (
         <p className="status warn">Cadastre pelo menos um tipo de evento na aba Tipos antes de adicionar eventos.</p>
