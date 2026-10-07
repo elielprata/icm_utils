@@ -120,4 +120,41 @@ test.describe('secretário', () => {
     await expect(pub.getByRole('button', { name: 'Adicionar', exact: true })).toHaveCount(0)
     await context.close()
   })
+
+  test('muda o dia do evento pelo campo de data e pelo botão Mover', async ({ page }) => {
+    await signIn(page)
+    await page.getByRole('button', { name: '+ Novo calendário' }).click()
+    await page.getByLabel('Nome').fill('Teste Mover')
+    await page.getByRole('button', { name: 'Criar calendário' }).click()
+
+    await page.getByRole('tab', { name: 'Eventos' }).click()
+    await page.locator('input[type="month"]').fill('2026-10')
+
+    // Cria o evento no dia 5
+    await page.getByRole('button', { name: '2026-10-05' }).click()
+    await page.getByLabel('Título').fill('Reunião Móvel')
+    await page.getByRole('button', { name: 'Adicionar', exact: true }).click()
+    await expect(page.locator('.cg-sheet-event-row')).toContainText('Reunião Móvel')
+    await page.keyboard.press('Escape')
+    await expect(page.locator('button[aria-label="2026-10-05"] .cg-dots i')).toHaveCount(1)
+
+    // Campo de data: edita e troca para o dia 12
+    await page.getByRole('button', { name: '2026-10-05' }).click()
+    await page.getByRole('button', { name: 'Editar' }).click()
+    await page.getByLabel('Data', { exact: true }).fill('2026-10-12')
+    await page.getByRole('button', { name: 'Salvar' }).click()
+    await page.keyboard.press('Escape')
+    await expect(page.locator('button[aria-label="2026-10-05"] .cg-dots i')).toHaveCount(0)
+    await expect(page.locator('button[aria-label="2026-10-12"] .cg-dots i')).toHaveCount(1)
+
+    // Botão Mover: toca no dia de destino na grade e confirma
+    await page.getByRole('button', { name: '2026-10-12' }).click()
+    await page.getByRole('button', { name: 'Mover', exact: true }).click()
+    await expect(page.locator('.moving-banner')).toContainText('Movendo Reunião Móvel')
+    await page.getByRole('button', { name: '2026-10-20' }).click()
+    await expect(page.locator('.sheet h3')).toContainText('Mover Reunião Móvel para')
+    await page.locator('.sheet .primary', { hasText: 'Mover' }).click()
+    await expect(page.locator('button[aria-label="2026-10-12"] .cg-dots i')).toHaveCount(0)
+    await expect(page.locator('button[aria-label="2026-10-20"] .cg-dots i')).toHaveCount(1)
+  })
 })

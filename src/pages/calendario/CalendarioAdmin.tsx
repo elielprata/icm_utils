@@ -70,17 +70,19 @@ function Admin({ calendarId, user }: { calendarId: string; user: User }) {
 
 const WEEKDAY_LETTERS = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SAB']
 
-type Draft = { time: string; title: string; note: string; typeId: string; confirmed: boolean }
-const emptyDraft = (typeId: string): Draft => ({ time: '', title: '', note: '', typeId, confirmed: true })
+type Draft = { date: string; time: string; title: string; note: string; typeId: string; confirmed: boolean }
+const emptyDraft = (typeId: string, date: string): Draft => ({ date, time: '', title: '', note: '', typeId, confirmed: true })
 
 function EventsTab({ calendar, events }: { calendar: Calendar; events: CalendarEvent[] }) {
   const [month, setMonth] = useState(currentMonthKey())
   const [selected, setSelected] = useState<string | null>(null)
   const [editing, setEditing] = useState<CalendarEvent | null>(null)
+  const [moving, setMoving] = useState<CalendarEvent | null>(null)
+  const [moveTarget, setMoveTarget] = useState<string | null>(null)
   const typeIds = Object.entries(calendar.types)
     .sort((a, b) => a[1].order - b[1].order)
     .map(([id]) => id)
-  const [draft, setDraft] = useState<Draft>(emptyDraft(typeIds[0] ?? ''))
+  const [draft, setDraft] = useState<Draft>(emptyDraft(typeIds[0] ?? '', ''))
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -96,7 +98,15 @@ function EventsTab({ calendar, events }: { calendar: Calendar; events: CalendarE
   const open = (date: string) => {
     setSelected(date)
     setEditing(null)
-    setDraft(emptyDraft(typeIds[0] ?? ''))
+    setDraft(emptyDraft(typeIds[0] ?? '', date))
+  }
+
+  const selectDay = (date: string) => {
+    if (moving) {
+      if (date !== moving.date) setMoveTarget(date)
+      return
+    }
+    open(date)
   }
 
   const run = async (action: () => Promise<unknown>) => {
@@ -126,6 +136,17 @@ function EventsTab({ calendar, events }: { calendar: Calendar; events: CalendarE
         <p className="status warn">Cadastre pelo menos um tipo de evento na aba Tipos antes de adicionar eventos.</p>
       )}
 
+      {moving && (
+        <div className="moving-banner">
+          <span>
+            Movendo <b>{moving.title}</b> ({dateLabel(moving.date)}): toque no dia de destino.
+          </span>
+          <button type="button" className="ghost" onClick={() => setMoving(null)}>
+            Cancelar
+          </button>
+        </div>
+      )}
+
       <div className="cg-weekdays">
         {WEEKDAY_LETTERS.map((w) => (
           <span key={w}>{w}</span>
@@ -134,7 +155,7 @@ function EventsTab({ calendar, events }: { calendar: Calendar; events: CalendarE
       <div className="cg-grid cg-grid-interactive">
         {cells.map((date, i) =>
           date ? (
-            <button key={date} type="button" className="cg-cell cg-cell-btn" aria-label={date} onClick={() => open(date)}>
+            <button key={date} type="button" className="cg-cell cg-cell-btn" aria-label={date} onClick={() => selectDay(date)}>
               <span className="cg-day">{Number(date.slice(8, 10))}</span>
               <div className="cg-dots">
                 {events
@@ -158,7 +179,7 @@ function EventsTab({ calendar, events }: { calendar: Calendar; events: CalendarE
         não confirmado (só você vê; não entra no link nem na imagem).
       </p>
 
-      {selected && typeIds.length > 0 && (
+      {selected && !moving && typeIds.length > 0 && (
         <Sheet title={dateLabel(selected)} onClose={close}>
           {error && <p className="status warn">{error}</p>}
           <div className="cg-sheet-events">
@@ -175,8 +196,18 @@ function EventsTab({ calendar, events }: { calendar: Calendar; events: CalendarE
                     type="button"
                     className="ghost"
                     onClick={() => {
+                      setMoving(e)
+                      setSelected(null)
+                    }}
+                  >
+                    Mover
+                  </button>
+                  <button
+                    type="button"
+                    className="ghost"
+                    onClick={() => {
                       setEditing(e)
-                      setDraft({ time: e.time ?? '', title: e.title, note: e.note ?? '', typeId: e.typeId, confirmed: e.confirmed !== false })
+                      setDraft({ date: e.date, time: e.time ?? '', title: e.title, note: e.note ?? '', typeId: e.typeId, confirmed: e.confirmed !== false })
                     }}
                   >
                     Editar
@@ -199,9 +230,9 @@ function EventsTab({ calendar, events }: { calendar: Calendar; events: CalendarE
             className="sheet-form"
             onSubmit={async (ev) => {
               ev.preventDefault()
-              if (!draft.title.trim() || !draft.typeId) return
+              if (!draft.title.trim() || !draft.typeId || !draft.date) return
               const data = {
-                date: selected,
+                date: draft.date,
                 title: draft.title.trim().slice(0, 80),
                 typeId: draft.typeId,
                 confirmed: draft.confirmed,
@@ -213,11 +244,17 @@ function EventsTab({ calendar, events }: { calendar: Calendar; events: CalendarE
                 : await run(() => addEvent(calendar.id, data))
               if (ok) {
                 setEditing(null)
-                setDraft(emptyDraft(typeIds[0] ?? ''))
+                setDraft(emptyDraft(typeIds[0] ?? '', selected))
               }
             }}
           >
             <b>{editing ? `Editar ${editing.title}` : 'Novo evento'}</b>
+            <input
+              aria-label="Data"
+              type="date"
+              value={draft.date}
+              onChange={(e) => setDraft({ ...draft, date: e.target.value })}
+            />
             <input
               aria-label="Hora (opcional)"
               type="time"
@@ -255,7 +292,7 @@ function EventsTab({ calendar, events }: { calendar: Calendar; events: CalendarE
             </label>
             <div className="sheet-buttons">
               {editing && (
-                <button type="button" className="ghost" onClick={() => { setEditing(null); setDraft(emptyDraft(typeIds[0] ?? '')) }}>
+                <button type="button" className="ghost" onClick={() => { setEditing(null); setDraft(emptyDraft(typeIds[0] ?? '', selected)) }}>
                   Cancelar edição
                 </button>
               )}
@@ -264,6 +301,34 @@ function EventsTab({ calendar, events }: { calendar: Calendar; events: CalendarE
               </button>
             </div>
           </form>
+        </Sheet>
+      )}
+
+      {moving && moveTarget && (
+        <Sheet
+          title={`Mover ${moving.title} para ${dateLabel(moveTarget)}?`}
+          subtitle={`Sai de ${dateLabel(moving.date)}.`}
+          onClose={() => setMoveTarget(null)}
+        >
+          {error && <p className="status warn">{error}</p>}
+          <div className="sheet-buttons">
+            <button type="button" className="ghost" onClick={() => setMoveTarget(null)}>
+              Voltar
+            </button>
+            <button
+              className="primary"
+              disabled={busy}
+              onClick={async () => {
+                const ok = await run(() => updateEvent(calendar.id, moving.id, { date: moveTarget }))
+                if (ok) {
+                  setMoving(null)
+                  setMoveTarget(null)
+                }
+              }}
+            >
+              Mover
+            </button>
+          </div>
         </Sheet>
       )}
     </section>
